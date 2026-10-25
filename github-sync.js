@@ -16,7 +16,7 @@ const utf8Decode=encoded=>{
 };
 const jsonClean=p=>JSON.stringify(p,null,2)+'\n';
 export function createGitHubStore(onStatus){
- let token=null,sha=null,loadedJSON=null,queuedJSON=null,timer=null,busy=false,blocked=false,loadReady=false;
+ let token=null,sha=null,loadedJSON=null,queuedJSON=null,timer=null,busy=false,blocked=false,loadReady=false,failures=0;
  const status=(kind,message)=>onStatus?.(kind,message);
  async function getRemote(authToken){
    const headers={...HEADERS};
@@ -43,11 +43,8 @@ export function createGitHubStore(onStatus){
  }
  function schedule(p,immediate=false){
    const next=jsonClean(p);
-   if(next===loadedJSON&&!queuedJSON){
-     if(token)status('saved','Tudo salvo no GitHub');
-     return;
-   }
-   queuedJSON=next;
+   if(next===loadedJSON&&!busy){queuedJSON=null;clearTimeout(timer);status(token?'saved':'idle',token?'Tudo salvo no GitHub':'Projeto carregado do GitHub · conecte para salvar');return;}
+   queuedJSON=next;failures=0;
    if(!token){status('pending','Alterações sem salvar · conecte o GitHub');return;}
    if(blocked){status('error','Conflito de versões · exporte seu JSON');return;}
    status('pending','Alterações pendentes de envio…');
@@ -70,14 +67,16 @@ export function createGitHubStore(onStatus){
      }
      const data=await res.json();
      if(!data.content?.sha)throw new Error('O GitHub não confirmou a nova versão.');
-     sha=data.content.sha;loadedJSON=content;
+     sha=data.content.sha;loadedJSON=content;failures=0;
+     if(queuedJSON===loadedJSON)queuedJSON=null;
      status(queuedJSON?'pending':'saved',queuedJSON?'Há alterações mais recentes a enviar':'Salvo no GitHub · '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
    }catch(error){
      if(!queuedJSON)queuedJSON=content;
+     failures++;
      status('error',error.message||'Não foi possível salvar automaticamente.');
    }finally{
      busy=false;
-     if(queuedJSON&&token&&!blocked){clearTimeout(timer);timer=setTimeout(flush,2200);}
+     if(queuedJSON&&token&&!blocked&&failures<3){clearTimeout(timer);timer=setTimeout(flush,2200*failures);}
    }
  }
  async function connect(secret,project){
@@ -98,6 +97,6 @@ export function createGitHubStore(onStatus){
  }
  function state(){return {connected:!!token,pending:!!queuedJSON,busy,blocked,loadReady};}
  function disconnect(){token=null;clearTimeout(timer);status('idle','Desconectado · alterações futuras não serão salvas');}
- function saveNow(project){schedule(project,true);if(token&&!busy&&!blocked)flush();}
+ function saveNow(project){blocked=false;failures=0;schedule(project,true);if(token&&!busy)flush();}
  return {load,connect,schedule,state,disconnect,saveNow};
 }
