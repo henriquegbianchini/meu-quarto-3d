@@ -72,3 +72,10 @@
  #github-connect svg{display:none}
  .plan-canvas{inset:150px 1px 88px}
 }
+
+
+.save-status-button{padding:0;border:0;background:transparent;color:var(--muted);font-size:10px;text-align:left;cursor:pointer;max-width:265px;line-height:1.3}
+.save-status-button:hover{text-decoration:underline;text-underline-offset:3px}
+.save-status-button:focus-visible{outline:2px solid #638f70;outline-offset:3px;border-radius:3px}
+@media(max-width:730px){.save-status-button{font-size:9px;max-width:155px}}
+@media(max-width:400px){.save-status-button{max-width:118px;font-size:9px}}
