@@ -37,20 +37,56 @@ Os itens apoiados na bancada, cama e prateleiras acompanham o móvel.
 Tampo, gabinetes e quadros são objetos separados. Nas prateleiras, o campo
 de altura de posição indica o topo da superfície, em centímetros.
 
-Ao abrir uma versão antiga salva no navegador pela primeira vez depois desta
-atualização, a aplicação guarda o projeto completo anterior antes de carregar
-o modelo com as medidas informadas. A cópia anterior pode ser baixada em
-Ambiente. Importações JSON posteriores são preservadas como foram abertas.
+## Planta em escala
 
-As edições são salvas no armazenamento deste navegador. Isso não é
-sincronização em nuvem. Baixe o JSON ou um novo HTML para guardar as mudanças,
-transferir para outro aparelho ou enviá-las para revisão no ChatGPT.
-Também é possível exportar GLB com objetos separados e PNG da vista atual.
+Na aba **Planta**, a vista técnica usa SVG vetorial dimensionado a partir de
+`room.w` e `room.d`, em metros. Exibe cotas externas, janela, porta com o
+ângulo de abertura e o contorno dos móveis principais. Selecione ou arraste
+um móvel na própria planta; as posições alteradas atualizam o 3D e permitem
+desfazer/refazer. Equipamentos e objetos apoiados são editados na lista para
+não sobrepor as medidas. Posições sem medições são aproximadas; a escala das
+paredes e as cotas seguem as medidas informadas no projeto.
+
+## Sincronização pelo GitHub (não pelo navegador)
+
+O site lê automaticamente `projeto-atual.json` da branch `main` do
+repositório via API do GitHub. `meu_quarto_medidas.json` permanece como
+referência original e o histórico de alterações fica disponível nos commits.
+
+Para ativar o **salvamento automático após cada edição**:
+
+1. Abra o site no GitHub Pages e clique em **Conectar GitHub**.
+2. Crie em https://github.com/settings/personal-access-tokens/new um token
+   **Fine-grained**, restrito ao repositório **meu-quarto-3d**, com
+   permissão **Contents: Read and write** e expiração curta (por exemplo, 7 dias).
+3. Cole o token **somente no campo do site**, nunca no chat ou em arquivos.
+   Após autorizar, cada alteração salva uma versão no repositório depois de
+   uma pequena pausa. Status e falhas aparecem no cabeçalho.
+
+**Segurança e limites:** GitHub Pages é um site estático, incapaz de gravar no
+repositório sem uma credencial autorizada ou um backend de autenticação.
+O token **não é armazenado no navegador**, nem incluído no código, arquivos
+de projeto ou commits: ele só permanece na memória até atualizar/fechar
+a página. Por isso é necessário reconectar a cada nova visita. Quando
+não conectado, o site permite editar e exportar JSON, mas avisa que as
+mudanças ainda não foram enviadas ao GitHub. Conflitos de versão não são
+sobrescritos automaticamente; exporte o JSON e recarregue para conciliar.
+O arquivo do quarto está em um repositório **público**, portanto as medidas
+e posições gravadas nele também são públicas.
+
+Se existia um rascunho antigo salvo neste navegador, pode recuperá-lo uma
+única vez em **Exportar → Recuperar uma edição antiga deste navegador**.
+A aplicação não grava novas edições em `localStorage`.
+
+Continuam disponíveis as exportações JSON, GLB e PNG; o arquivo HTML
+monolítico `meu_quarto_3d.html` é uma cópia offline antiga e **não** oferece
+este sistema de GitHub nem a nova planta até a execução do build offline.
 
 ## Código
 
 `model.js` contém o projeto inicial e validação de arquivos.
-`scene.js` monta a geometria paramétrica; `app.js` controla a interface.
+`scene.js` monta a geometria paramétrica; `floorplan.js` cria a planta cotada;
+`github-sync.js` sincroniza o projeto com o GitHub; `app.js` controla a interface.
 `software-renderer.js` implementa a alternativa Canvas. Three.js r180
 está em `vendor` e conserva a licença MIT em `THREE-LICENSE.txt`.
 
