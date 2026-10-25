@@ -5,3 +5,70 @@
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 #scene>svg{display:block;width:100%;height:100%;touch-action:none;stroke:none;fill:initial}
 .measurement-note{background:#f1f1e5;border:1px solid #e7e8d9;border-radius:7px;padding:10px;font-size:9px;line-height:1.65;color:#78806a}.measurement-details{border:1px solid var(--line);border-radius:8px;padding:11px;font-size:10px;color:var(--muted);line-height:1.7}.measurement-details summary{cursor:pointer;color:var(--sage);font-weight:600}.measurement-details p{padding:9px 0;margin:0;border-bottom:1px solid var(--line)}.measurement-details p:last-child{border-bottom:0}.form-grid label{align-self:end}
+
+
+
+/* Planta técnica cotada — geometria proporcional e interação direta. */
+#floorplan[hidden]{display:none!important}
+.floorplan{position:absolute;inset:0;z-index:1;display:block;background:radial-gradient(ellipse at 50% 50%,#fffefa 0%,#f1f5ee 75%,#e9f0e9 100%);overflow:hidden}
+.floorplan-mode #scene{visibility:hidden}
+.floorplan-mode .scene-caption{display:none}
+.floorplan-mode .render-error{display:none!important}
+.scene-top,.view-switch,.scene-bottom{z-index:3}
+.plan-title{position:absolute;top:108px;left:32px;display:flex;flex-direction:column;gap:5px;color:#2c4038;z-index:2;pointer-events:none}
+.plan-title strong{font-size:16px;letter-spacing:-.35px;font-weight:650}
+.plan-title span{font-size:11px;color:#75847b}
+.plan-canvas{position:absolute;inset:143px 26px 85px;display:flex;align-items:center;justify-content:center;touch-action:none}
+.plan-map{width:100%;height:100%;max-height:100%;overflow:visible;user-select:none;-webkit-user-select:none}
+.plan-wall line{stroke:#38554b;stroke-width:7;stroke-linecap:square}
+.plan-opening line{stroke:#60a6c0;stroke-width:3}
+.plan-dimension line{stroke:#7a8f87;stroke-width:1.1;vector-effect:non-scaling-stroke}
+.plan-dimension text{fill:#365b4b;font-size:18px;font-weight:650;paint-order:stroke;stroke:#fffdf8;stroke-width:5px;stroke-linejoin:round}
+.plan-label text{fill:#415b52;font-size:13px;font-weight:650;letter-spacing:1px}
+.plan-label .plan-caption{font-size:11px;font-weight:500;fill:#73857d;letter-spacing:.2px}
+.plan-object{outline:0;cursor:grab}
+.plan-object rect{fill:var(--plan-color,#97aa9f);fill-opacity:.63;stroke:#446655;stroke-width:1.8;transition:fill-opacity .15s ease}
+.plan-object:hover rect,.plan-object:focus-visible rect{fill-opacity:.92;stroke:#345b43;stroke-width:3}
+.plan-object.selected rect{fill-opacity:.9;stroke:#1b694a;stroke-width:4}
+.plan-object:focus-visible{filter:drop-shadow(0 0 3px #6d9672)}
+.plan-furniture-label{font-size:11px;fill:#233d36;stroke:#fafbf9;stroke-width:2px;paint-order:stroke;font-weight:700;pointer-events:none}
+.plan-furniture-size{font-size:10px;fill:#36534a;stroke:#fafbf9;stroke-width:2px;paint-order:stroke;pointer-events:none}
+.plan-selected-label rect{fill:#e4eee5;stroke:#b6cbb9}
+.plan-selected-label text{font-size:11px;fill:#28523c;font-weight:650}
+.plan-hint{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);text-align:center;max-width:80%;width:max-content;color:#728078;font-size:11px;line-height:1.5;pointer-events:none}
+#save-status[data-state="error"]{color:#a74f46}
+#save-status[data-state="saving"]{color:#587452}
+#save-status[data-state="saved"]{color:#38704d}
+#save-status[data-state="pending"]{color:#9a7550}
+.github-actions{display:grid;grid-template-columns:1fr;gap:12px;margin:18px 0}
+.github-actions label{display:flex;flex-direction:column;gap:7px;color:#3b4c42;font-size:12px;font-weight:600}
+.github-actions input{padding:12px;border:1px solid #cbd7cc;background:#fff;border-radius:8px;min-width:0;font-size:13px;width:100%;box-sizing:border-box}
+.github-actions p{margin:0;font-size:11px;color:#748178;line-height:1.65}
+.github-inline-status{border-radius:8px;background:#ecf2e9;color:#4a6454;padding:12px 14px;font-size:12px;line-height:1.65}
+.github-inline-status strong{display:block;margin-bottom:4px}
+.github-actions .button{justify-content:center}
+.header-actions{gap:7px}
+.header-export{white-space:nowrap}
+@media(max-width:1000px){
+ .plan-title{left:23px;top:92px}
+ .plan-canvas{inset:135px 11px 92px}
+ .plan-hint{bottom:77px;font-size:10px;max-width:86%}
+}
+@media(max-width:730px){
+ body.floorplan-mode .viewport{height:76dvh;min-height:520px;max-height:850px}
+ .plan-title{left:17px;top:108px}
+ .plan-title strong{font-size:14px}
+ .plan-title span{font-size:10px}
+ .plan-canvas{inset:145px 5px 95px}
+ .plan-hint{bottom:76px;font-size:9px;max-width:94%}
+ .header-export{display:none}
+ #github-connect{padding:9px 10px}
+ #github-connect span{font-size:10px}
+}
+@media(max-width:400px){
+ .project-title{padding-left:8px}
+ .project-title strong{font-size:11px}
+ .project-title>span{font-size:9px;max-width:120px}
+ #github-connect svg{display:none}
+ .plan-canvas{inset:150px 1px 88px}
+}
