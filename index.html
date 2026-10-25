@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f4ef">
+  <meta name="description" content="Um editor simples para explorar e reorganizar seu quarto em 3D. Mova móveis, experimente cores e salve seu projeto.">
+  <title>Meu quarto — Estúdio 3D</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="m12 3 9 5v9l-9 5-9-5V8l9-5Zm0 10 9-5M12 13 3 8m9 5v9M7.5 5.5l9 5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="m5 3 14 9-7 1-3 7-4-17Z"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M8 7l4-4 4 4m-8 10 4 4 4-4M7 8l-4 4 4 4m10-8 4 4-4 4"/></symbol>
+    <symbol id="i-top" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h8v10m0-5h8"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="m9 4-5 5 5 5M4 9h10a6 6 0 0 1 0 12"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 4 5 5-5 5m5-5H10a6 6 0 0 0 0 12"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 8a8 8 0 1 0 0 8m0-13v6h-6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 8h13v13H8zM16 8V3H3v13h5"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 7h5l2-3h4l2 3h5v14H3z"/><circle cx="12" cy="14" r="4"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5m0 3v.1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6V3h7l3 3h8v15H3V6Z"/></symbol>
+    <symbol id="i-bed" viewBox="0 0 24 24"><path d="M3 9h18v10H3zm0 10v3m18-3v3M5 9V3h14v6M6 6h4m4 0h4M3 15h18"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/></symbol>
+  </defs></svg>
+
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Meu espaço, início"><span class="brandmark"><svg><use href="#i-cube"/></svg></span><span>meu espaço<span class="brand-sub">ESTÚDIO 3D</span></span></a>
+    <div class="project-title"><strong>Meu quarto</strong><span id="save-status"><i></i>Salvo neste navegador</span></div>
+    <div class="header-actions">
+      <button class="icon-button" id="undo" title="Desfazer (Ctrl+Z)" aria-label="Desfazer"><svg><use href="#i-undo"/></svg></button>
+      <button class="icon-button" id="redo" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer"><svg><use href="#i-redo"/></svg></button>
+      <button class="icon-button hide-small" id="help" title="Como usar" aria-label="Como usar"><svg><use href="#i-help"/></svg></button>
+      <button class="button primary" id="save-menu"><svg><use href="#i-download"/></svg><span>Salvar projeto</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="viewport" id="viewport" aria-label="Visualização 3D do quarto">
+      <div id="scene"></div>
+      <div class="scene-top">
+        <div class="project-badge"><span class="live-dot"></span><span>RECONSTRUÍDO DAS SUAS FOTOS</span></div>
+        <button id="photo-button" class="photo-button"><svg><use href="#i-camera"/></svg>Ver fotos</button>
+      </div>
+      <div class="scene-heading"><span class="eyebrow">UM ESPAÇO, MUITAS POSSIBILIDADES</span><h1>Do seu jeito.</h1><p>Explore o quarto. Experimente uma nova ideia.</p></div>
+      <div class="view-switch" role="group" aria-label="Escolha da vista">
+        <button data-view="3d" class="active"><svg><use href="#i-cube"/></svg>3D</button>
+        <button data-view="top"><svg><use href="#i-top"/></svg>Planta</button>
+        <button data-view="inside"><svg><use href="#i-eye"/></svg>Entrar</button>
+      </div>
+      <div class="scene-caption" id="scene-caption">Arraste para girar · Use dois dedos para aproximar</div>
+      <div class="scene-bottom">
+        <div class="tools" role="group" aria-label="Ferramentas">
+          <button data-mode="explore" class="active" title="Explorar e selecionar" aria-label="Explorar e selecionar"><svg><use href="#i-arrow"/></svg><span>Explorar</span></button>
+          <button data-mode="move" title="Selecionar e arrastar móveis" aria-label="Mover objetos"><svg><use href="#i-move"/></svg><span>Mover</span></button>
+          <span class="tool-divider"></span>
+          <button id="reset-view" title="Centralizar vista" aria-label="Centralizar vista"><svg><use href="#i-expand"/></svg></button>
+        </div>
+        <button class="dimension-badge" id="dimension-badge"><span id="area-text">8,99 m²</span><small id="measure-label">dimensões informadas</small></button>
+      </div>
+      <div class="loading" id="loading"><span class="loader"></span>Montando seu quarto…</div>
+      <div class="render-error" id="render-error" hidden><h2>O 3D não abriu neste navegador</h2><p>Abra o link no Chrome, Edge ou Safari com aceleração gráfica. Você ainda pode editar os itens e baixar o projeto.</p></div>
+    </section>
+
+    <aside class="sidebar" aria-label="Editor do quarto">
+      <div class="panel-tabs" role="tablist"><button id="tab-objects" role="tab" aria-selected="true" class="active">Objetos <span id="object-count">22</span></button><button id="tab-room" role="tab" aria-selected="false">Ambiente</button></div>
+      <div id="objects-panel" class="panel-content">
+        <div class="section-line"><div><h2>Seu quarto, por partes</h2><p>Toque em um item para editar.</p></div><button id="add" class="icon-button filled" title="Adicionar objeto" aria-label="Adicionar objeto"><svg><use href="#i-plus"/></svg></button></div>
+        <label class="search"><svg><use href="#i-eye"/></svg><input id="search" type="search" placeholder="Encontrar um objeto…" aria-label="Buscar objeto"></label>
+        <div id="object-list" class="object-list"></div>
+        <section id="inspector" class="inspector" aria-label="Propriedades do objeto"></section>
+      </div>
+      <div id="room-panel" class="panel-content" hidden>
+        <div class="section-line"><div><h2>A base do seu espaço</h2><p>Medidas informadas em 25/10/2026.</p></div></div>
+        <div class="notice"><span class="notice-dot"></span><span id="room-notice">Dimensões do quarto informadas por você. Objetos e posições sem medidas continuam aproximados.</span></div>
+        <details class="measurement-details"><summary>Referências e pontos a confirmar</summary><div id="measurement-details"></div></details>
+        <h3>Medidas do quarto <small>em metros</small></h3>
+        <div class="form-grid three"><label>Parede janela/porta<input id="room-w" type="number" min="1.5" max="10" step="0.01"></label><label>Parede do PC<input id="room-d" type="number" min="1.5" max="10" step="0.01"></label><label>Altura<input id="room-h" type="number" min="2" max="5" step="0.01"></label></div>
+        <label class="check-row"><input type="checkbox" id="measured">Já conferi as medidas do quarto</label>
+        <h3>Cores e materiais</h3>
+        <label class="color-row">Paredes<input type="color" id="wall-color"></label>
+        <div class="swatches" id="wall-swatches"><button data-color="#638da2" style="--swatch:#638da2" aria-label="Azul atual"></button><button data-color="#ece9df" style="--swatch:#ece9df" aria-label="Branco quente"></button><button data-color="#c5c5b8" style="--swatch:#c5c5b8" aria-label="Cinza claro"></button><button data-color="#9ca993" style="--swatch:#9ca993" aria-label="Verde sálvia"></button><button data-color="#c2a691" style="--swatch:#c2a691" aria-label="Areia"></button><button data-color="#46586a" style="--swatch:#46586a" aria-label="Azul escuro"></button></div>
+        <label class="color-row">Piso<input type="color" id="floor-color"></label>
+        <label class="color-row">Madeira da porta e janela<input type="color" id="wood-color"></label>
+        <label class="range-row">Abertura da porta <span id="door-degrees"></span><input id="door-angle" type="range" min="0" max="100" step="1"></label>
+        <h3>Moldura da janela <small>dimensões externas · cm</small></h3>
+        <div class="form-grid three"><label>Largura<input id="win-w" type="number" min="30" max="400" step=".1"></label><label>Altura<input id="win-h" type="number" min="30" max="240" step=".1"></label><label>Base do chão<input id="win-sill" type="number" min="20" max="180" step=".1"></label></div>
+        <div class="form-grid"><label>Centro desde a esquerda (cm)<input id="win-center" type="number" min="20" max="900" step=".1"></label></div>
+        <h3>Porta <small>parede da entrada · cm</small></h3>
+        <div class="form-grid three"><label>Largura<input id="door-w" type="number" min="50" max="150" step=".1"></label><label>Altura<input id="door-h" type="number" min="180" max="300" step=".1"></label><label>Vão à direita<input id="door-offset" type="number" min="0" max="500" step=".1"></label></div>
+        <h3>Visualização</h3>
+        <label class="check-row"><input type="checkbox" id="auto-walls" checked>Ocultar paredes que bloqueiam a vista</label>
+        <label class="check-row"><input type="checkbox" id="snap" checked>Encaixar movimentos a cada 5 cm</label>
+        <button class="button secondary wide" id="restore"><svg><use href="#i-rotate"/></svg>Reaplicar medidas informadas</button>
+        <button class="button secondary wide" id="previous-project" hidden><svg><use href="#i-download"/></svg>Baixar versão anterior às medidas</button>
+      </div>
+      <footer class="panel-footer"><svg><use href="#i-check"/></svg><span>Suas alterações ficam neste navegador.<br><button id="backup-help">Baixe uma cópia para guardar ou me enviar.</button></span></footer>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+  <dialog id="modal"><div class="modal-top"><div><span class="eyebrow" id="modal-eyebrow">MEU ESPAÇO</span><h2 id="modal-title"></h2></div><button class="icon-button" id="close-modal" aria-label="Fechar"><svg><use href="#i-close"/></svg></button></div><div id="modal-body"></div></dialog>
+  <input type="file" id="project-file" accept=".json,application/json" hidden>
+  <script id="embedded-project" type="application/json">null</script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

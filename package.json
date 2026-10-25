@@ -1,0 +1,8 @@
+{
+  "name": "meu-quarto-editor-3d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build:offline": "node scripts/build-offline.mjs" },
+  "devDependencies": { "esbuild": "0.25.11" }
+}
