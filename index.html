@@ -34,29 +34,29 @@
 
   <header class="topbar">
     <a class="brand" href="#" aria-label="Meu espaço, início"><span class="brandmark"><svg><use href="#i-cube"/></svg></span><span>meu espaço<span class="brand-sub">ESTÚDIO 3D</span></span></a>
-    <div class="project-title"><strong>Meu quarto</strong><span id="save-status"><i></i>Salvo neste navegador</span></div>
+    <div class="project-title"><strong>Meu quarto</strong><span id="save-status" role="status" aria-live="polite">Carregando do GitHub…</span></div>
     <div class="header-actions">
       <button class="icon-button" id="undo" title="Desfazer (Ctrl+Z)" aria-label="Desfazer"><svg><use href="#i-undo"/></svg></button>
       <button class="icon-button" id="redo" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer"><svg><use href="#i-redo"/></svg></button>
       <button class="icon-button hide-small" id="help" title="Como usar" aria-label="Como usar"><svg><use href="#i-help"/></svg></button>
-      <button class="button primary" id="save-menu"><svg><use href="#i-download"/></svg><span>Salvar projeto</span></button>
+      <button class="button secondary header-export" id="save-menu"><svg><use href="#i-download"/></svg><span>Exportar</span></button><button class="button primary" id="github-connect"><svg><use href="#i-check"/></svg><span>Conectar GitHub</span></button>
     </div>
   </header>
 
   <main class="workspace">
     <section class="viewport" id="viewport" aria-label="Visualização 3D do quarto">
-      <div id="scene"></div>
+      <div id="scene"></div><div class="floorplan" id="floorplan" hidden aria-label="Planta 2D cotada do quarto"><div class="plan-title"><strong>Planta com medidas reais</strong><span>Vista superior · proporções em escala</span></div><div class="plan-canvas" id="plan-canvas"></div><div class="plan-hint">Selecione ou arraste um móvel para reposicionar. Itens de parede e objetos sobre móveis podem ser editados na lista.</div></div>
       <div class="scene-top">
-        <div class="project-badge"><span class="live-dot"></span><span>RECONSTRUÍDO DAS SUAS FOTOS</span></div>
+        <div class="project-badge"><span class="live-dot"></span><span>MEDIDAS DO SEU QUARTO</span></div>
         <button id="photo-button" class="photo-button"><svg><use href="#i-camera"/></svg>Ver fotos</button>
       </div>
-      <div class="scene-heading"><span class="eyebrow">UM ESPAÇO, MUITAS POSSIBILIDADES</span><h1>Do seu jeito.</h1><p>Explore o quarto. Experimente uma nova ideia.</p></div>
+      
       <div class="view-switch" role="group" aria-label="Escolha da vista">
         <button data-view="3d" class="active"><svg><use href="#i-cube"/></svg>3D</button>
         <button data-view="top"><svg><use href="#i-top"/></svg>Planta</button>
         <button data-view="inside"><svg><use href="#i-eye"/></svg>Entrar</button>
       </div>
-      <div class="scene-caption" id="scene-caption">Arraste para girar · Use dois dedos para aproximar</div>
+      <div class="scene-caption" id="scene-caption">Arraste para girar · Role para aproximar</div>
       <div class="scene-bottom">
         <div class="tools" role="group" aria-label="Ferramentas">
           <button data-mode="explore" class="active" title="Explorar e selecionar" aria-label="Explorar e selecionar"><svg><use href="#i-arrow"/></svg><span>Explorar</span></button>
@@ -67,7 +67,7 @@
         <button class="dimension-badge" id="dimension-badge"><span id="area-text">8,99 m²</span><small id="measure-label">dimensões informadas</small></button>
       </div>
       <div class="loading" id="loading"><span class="loader"></span>Montando seu quarto…</div>
-      <div class="render-error" id="render-error" hidden><h2>O 3D não abriu neste navegador</h2><p>Abra o link no Chrome, Edge ou Safari com aceleração gráfica. Você ainda pode editar os itens e baixar o projeto.</p></div>
+      <div class="render-error" id="render-error" hidden><h2>O 3D não abriu neste navegador</h2><p>Você ainda pode selecionar Planta para ver medidas e editar seus móveis. Tente ativar a aceleração gráfica para usar o 3D.</p></div>
     </section>
 
     <aside class="sidebar" aria-label="Editor do quarto">
@@ -102,7 +102,7 @@
         <button class="button secondary wide" id="restore"><svg><use href="#i-rotate"/></svg>Reaplicar medidas informadas</button>
         <button class="button secondary wide" id="previous-project" hidden><svg><use href="#i-download"/></svg>Baixar versão anterior às medidas</button>
       </div>
-      <footer class="panel-footer"><svg><use href="#i-check"/></svg><span>Suas alterações ficam neste navegador.<br><button id="backup-help">Baixe uma cópia para guardar ou me enviar.</button></span></footer>
+      <footer class="panel-footer"><svg><use href="#i-check"/></svg><span>O projeto principal fica versionado no GitHub. Conecte sua conta para enviar alterações automaticamente.<br><button id="backup-help">Exportar uma cópia de segurança</button></span></footer>
     </aside>
   </main>
 
