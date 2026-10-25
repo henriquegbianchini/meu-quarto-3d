@@ -79,3 +79,31 @@
 .save-status-button:focus-visible{outline:2px solid #638f70;outline-offset:3px;border-radius:3px}
 @media(max-width:730px){.save-status-button{font-size:9px;max-width:155px}}
 @media(max-width:400px){.save-status-button{max-width:118px;font-size:9px}}
+
+
+/* Legibilidade: não usar rótulos de 8–10 px nos controles do editor. */
+.section-line h2{font-size:17px}
+.section-line p,.search input{font-size:12px}
+.panel-tabs button{font-size:13px}
+.panel-content h3{font-size:13px}
+.panel-content h3 small{font-size:10px}
+.object-info strong{font-size:12px;max-width:205px;font-weight:600}
+.object-info small{font-size:10px;line-height:1.4}
+.object-row{min-height:53px}
+.form-grid label,.full-label{font-size:11px;line-height:1.45;color:#5f7168}
+.form-grid input,.full-label input{font-size:12px;min-height:34px}
+.check-row,.range-row,.color-row{font-size:12px;color:#42564c}
+.notice,.measurement-details{font-size:11px;color:#53675b}
+.field-hint{font-size:11px}
+.panel-footer,.panel-footer button{font-size:11px;color:#687c6e}
+.view-switch button{font-size:11px}
+.tools button{font-size:11px}
+.dimension-badge small{font-size:10px}
+@media(min-width:1500px){.workspace{grid-template-columns:minmax(0,1fr) 380px}}
+@media(max-width:730px){
+ .object-info strong{font-size:12px}
+ .object-info small{font-size:10px}
+ .view-switch button{font-size:10px}
+ .tools button{font-size:10px}
+ .dimension-badge small{font-size:9px}
+}
