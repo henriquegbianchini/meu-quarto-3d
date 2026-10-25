@@ -1,118 +1,137 @@
-// Planta 2D cotada. Toda geometria parte das dimensões do projeto, em metros.
+// Planta técnica 2D. Geometria e dimensões sempre em metros.
 import {effectiveVisible} from './model.js';
 
-const px=115;
-const pad={left:124,right:88,top:126,bottom:135};
-const escapeText=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const coord=n=>Number(n.toFixed(2));
+const PX=124;
+const PAD={left:108,right:38,top:112,bottom:88};
 const floorTypes=new Set(['bed','tabletop','cabinet','dresser','chair','wardrobe','nightstand','rug','plant','block','desk']);
-const prettyName=o=>o.name.replace(' de solteiro','').replace(' de escritório','').replace(' · lado da porta','').replace(' · lado do tampo','');
-function visibleOnPlan(o,p){return effectiveVisible(o,p)&&!o.parentId&&floorTypes.has(o.type);}
-function line(x1,y1,x2,y2,extra=''){return '<line x1="'+coord(x1)+'" y1="'+coord(y1)+'" x2="'+coord(x2)+'" y2="'+coord(y2)+'" '+extra+'/>';}
-function dimH(x1,x2,y,label,base){
- return '<g class="plan-dimension">'+line(x1,base,x1,y-6)+line(x2,base,x2,y-6)+line(x1,y,x2,y)+
- line(x1-5,y-5,x1+5,y+5)+line(x2-5,y-5,x2+5,y+5)+
- '<text x="'+coord((x1+x2)/2)+'" y="'+coord(y-11)+'" text-anchor="middle">'+escapeText(label)+'</text></g>';
+const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n=value=>Number(value.toFixed(2));
+const fmt=value=>Number(value).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const line=(x1,y1,x2,y2,classes='')=>'<line x1="'+n(x1)+'" y1="'+n(y1)+'" x2="'+n(x2)+'" y2="'+n(y2)+'"'+(classes?' class="'+classes+'"':'')+'/>';
+const furniture=o=>effectiveVisible(o,o._project)&&!o.parentId&&floorTypes.has(o.type);
+const label=o=>o.name;
+const footprint=o=>fmt(o.w)+' × '+fmt(o.d)+' m';
+const palette={bed:'#d0d9d5',tabletop:'#bfcfc8',cabinet:'#a5b8ab',dresser:'#a5b8ab',chair:'#dfd4c5',wardrobe:'#c5c4ba',nightstand:'#c8c5b8',rug:'#e2dac7',plant:'#c0d2b5',block:'#d2d8d1',desk:'#bfcfc8'};
+function dimensionH(x1,x2,baseline,y,text){
+ return '<g class="plan-dimension">'+
+ line(x1,baseline-5,x1,y-8)+line(x2,baseline-5,x2,y-8)+line(x1,y,x2,y)+
+ line(x1-4,y-4,x1+4,y+4)+line(x2-4,y-4,x2+4,y+4)+
+ '<text class="plan-dimension-value" x="'+n((x1+x2)/2)+'" y="'+n(y-9)+'" text-anchor="middle">'+esc(text)+'</text></g>';
 }
-function dimV(y1,y2,x,label,base){
- const mid=(y1+y2)/2;
- return '<g class="plan-dimension">'+line(base,y1,x+6,y1)+line(base,y2,x+6,y2)+line(x,y1,x,y2)+
- line(x-5,y1-5,x+5,y1+5)+line(x-5,y2-5,x+5,y2+5)+
- '<text x="'+coord(x-12)+'" y="'+coord(mid)+'" text-anchor="middle" transform="rotate(-90 '+coord(x-12)+' '+coord(mid)+')">'+escapeText(label)+'</text></g>';
+function dimensionV(y1,y2,baseline,x,text){
+ const mid=(y1+y2)/2,tx=x-17;
+ return '<g class="plan-dimension">'+
+ line(baseline-5,y1,x+8,y1)+line(baseline-5,y2,x+8,y2)+line(x,y1,x,y2)+
+ line(x-4,y1-4,x+4,y1+4)+line(x-4,y2-4,x+4,y2+4)+
+ '<text class="plan-dimension-value" x="'+n(tx)+'" y="'+n(mid)+'" text-anchor="middle" transform="rotate(-90 '+n(tx)+' '+n(mid)+')">'+esc(text)+'</text></g>';
+}
+function planMarkup(project,selectedId,visible){
+ const r=project.room,X=PAD.left,Y=PAD.top;
+ const width=r.w*PX,depth=r.d*PX,right=X+width,bottom=Y+depth;
+ const winLeft=X+(r.w/2+r.window.center-r.window.w/2)*PX;
+ const winRight=winLeft+r.window.w*PX;
+ const doorRight=X+(r.w-r.door.offset)*PX,doorLeft=doorRight-r.door.w*PX;
+ const opening=r.door.angle*Math.PI/180;
+ const swingX=doorRight-r.door.w*PX*Math.cos(opening);
+ const swingY=bottom-r.door.w*PX*Math.sin(opening);
+ const parts=['<svg id="plan-map" class="plan-map" viewBox="0 0 '+n(width+PAD.left+PAD.right)+' '+n(depth+PAD.top+PAD.bottom)+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Planta baixa do quarto, com comprimento, largura, porta, janela e móveis em escala real">'];
+ parts.push('<defs><pattern id="plan-grid" width="'+PX/2+'" height="'+PX/2+'" patternUnits="userSpaceOnUse"><path d="M '+PX/2+' 0 L 0 0 0 '+PX/2+'" stroke="#dfe7e0" stroke-width=".6" fill="none"/></pattern></defs>');
+ parts.push('<rect class="plan-room-bg" x="'+X+'" y="'+Y+'" width="'+n(width)+'" height="'+n(depth)+'"/>');
+ parts.push('<rect x="'+X+'" y="'+Y+'" width="'+n(width)+'" height="'+n(depth)+'" fill="url(#plan-grid)" stroke="none"/>');
+ parts.push('<g class="plan-structure">'+line(X,Y,X,bottom)+line(right,Y,right,bottom)+line(X,Y,winLeft,Y)+line(winRight,Y,right,Y)+line(X,bottom,doorLeft,bottom)+line(doorRight,bottom,right,bottom)+'</g>');
+ parts.push('<g class="plan-window">'+line(winLeft,Y,winRight,Y)+line(winLeft,Y-5,winLeft,Y+5,'plan-opening-end')+line(winRight,Y-5,winRight,Y+5,'plan-opening-end')+'</g>');
+ parts.push('<g class="plan-door-geometry"><path d="M '+n(doorLeft)+' '+n(bottom)+' A '+n(r.door.w*PX)+' '+n(r.door.w*PX)+' 0 0 1 '+n(swingX)+' '+n(swingY)+'" class="plan-door-swing"/>'+
+ line(doorRight,bottom,swingX,swingY,'plan-door-leaf')+
+ '<circle cx="'+n(doorRight)+'" cy="'+n(bottom)+'" r="3.5" class="plan-hinge"/></g>');
+ parts.push(dimensionH(X,right,Y,36,fmt(r.w)+' m'));
+ parts.push(dimensionV(Y,bottom,X,32,fmt(r.d)+' m'));
+ parts.push('<text class="plan-opening-label" x="'+n((winLeft+winRight)/2)+'" y="'+n(Y-23)+'" text-anchor="middle">JANELA · '+fmt(r.window.w)+' m</text>');
+ parts.push('<text class="plan-opening-note" x="'+n((winLeft+winRight)/2)+'" y="'+n(Y-9)+'" text-anchor="middle">Base '+fmt(r.window.sill)+' m · altura '+fmt(r.window.h)+' m</text>');
+ parts.push('<text class="plan-opening-label" x="'+n((doorLeft+doorRight)/2)+'" y="'+n(bottom+28)+'" text-anchor="middle">PORTA · '+fmt(r.door.w)+' m</text>');
+ parts.push('<text class="plan-floor-note" x="'+n(X+width/2)+'" y="'+n(bottom+65)+'" text-anchor="middle">Pé-direito '+fmt(r.h)+' m · Área '+fmt(r.w*r.d)+' m²</text>');
+ // O contorno é a dimensão real do objeto; identificadores substituem nomes
+ // dentro do desenho, evitando sobreposição em móveis estreitos.
+ for(const {o,index} of visible){
+  const x=X+(o.x+r.w/2)*PX,y=Y+(o.z+r.d/2)*PX;
+  const ow=Math.max(3,o.w*PX),od=Math.max(3,o.d*PX),selected=o.id===selectedId;
+  const col=palette[o.type]||'#cfdad0';
+  parts.push('<g class="plan-object'+(selected?' selected':'')+'" data-plan-id="'+esc(o.id)+'" role="button" tabindex="0" aria-label="'+esc(o.name+', '+footprint(o))+'" transform="translate('+n(x)+' '+n(y)+') rotate('+n(-o.rotation)+')">');
+  parts.push('<title>'+esc(o.name+' — '+footprint(o))+'</title>');
+  parts.push('<rect class="plan-furniture-outline" x="'+n(-ow/2)+'" y="'+n(-od/2)+'" width="'+n(ow)+'" height="'+n(od)+'" rx="2" fill="'+col+'"/>');
+  // Tag visível apenas quando cabe no móvel; a legenda preserva todos os itens.
+  if(Math.min(ow,od)>=39){
+    parts.push('<rect class="plan-index-bg" x="-13" y="-12" width="26" height="24" rx="7"/>');
+    parts.push('<text class="plan-index" x="0" y="1" text-anchor="middle" dominant-baseline="central">'+String(index+1).padStart(2,'0')+'</text>');
+  }
+  parts.push('</g>');
+ }
+ parts.push('</svg>');
+ return parts.join('');
+}
+function legendMarkup(visible,selectedId,project){
+ return '<aside class="plan-legend" aria-label="Legenda dos móveis na planta">'+
+ '<div class="plan-legend-heading"><strong>Móveis na planta</strong><span>'+visible.length+' representados</span></div>'+
+ '<div class="plan-legend-list">'+visible.map(({o,index})=>
+ '<button type="button" class="plan-legend-row'+(o.id===selectedId?' selected':'')+'" data-plan-select="'+esc(o.id)+'" aria-pressed="'+String(o.id===selectedId)+'">'+
+ '<span class="plan-legend-id">'+String(index+1).padStart(2,'0')+'</span>'+
+ '<span class="plan-legend-desc"><strong>'+esc(label(o))+'</strong><small>'+footprint(o)+(o.rotation?' · giro '+fmt(Math.abs(o.rotation))+'°':'')+'</small></span></button>'
+ ).join('')+'</div><p class="plan-legend-note">As paredes e aberturas seguem as medidas informadas. Alguns móveis ainda têm posições aproximadas. Itens suspensos aparecem na lista de objetos do editor.</p></aside>';
 }
 export function renderFloorplan(host,project,selectedId){
  if(!host)return;
- const r=project.room,w=r.w*px,h=r.d*px;
- const X=pad.left,Y=pad.top,bottom=Y+h,right=X+w;
- const winL=X+(r.w/2+r.window.center-r.window.w/2)*px;
- const winR=winL+r.window.w*px;
- const doorR=X+(r.w-r.door.offset)*px,doorL=doorR-r.door.w*px;
- const doorAngle=r.door.angle*Math.PI/180;
- const doorEndX=doorR-r.door.w*px*Math.cos(doorAngle);
- const doorEndY=bottom-r.door.w*px*Math.sin(doorAngle);
- const pieces=[];
- pieces.push('<svg id="plan-map" class="plan-map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+coord(w+pad.left+pad.right)+' '+coord(h+pad.top+pad.bottom)+'" role="img" aria-label="Planta do quarto em escala com paredes, janela, porta, medidas e móveis">');
- pieces.push('<defs><pattern id="plan-grid" width="'+px/2+'" height="'+px/2+'" patternUnits="userSpaceOnUse"><path d="M '+px/2+' 0 L 0 0 0 '+px/2+'" fill="none" stroke="#dae2da" stroke-width=".7"/></pattern></defs>');
- pieces.push('<rect x="'+X+'" y="'+Y+'" width="'+coord(w)+'" height="'+coord(h)+'" fill="#fcfdf9" stroke="none"/>');
- pieces.push('<rect x="'+X+'" y="'+Y+'" width="'+coord(w)+'" height="'+coord(h)+'" fill="url(#plan-grid)"/>');
- pieces.push('<g class="plan-wall">'+line(X,Y,X,bottom)+line(right,Y,right,bottom)+line(X,Y,winL,Y)+line(winR,Y,right,Y)+line(X,bottom,doorL,bottom)+line(doorR,bottom,right,bottom)+'</g>');
- pieces.push('<g class="plan-opening">'+line(winL,Y,winR,Y,'stroke="#71a9c2" stroke-width="9"')+
- line(winL,Y-6,winL,Y+6)+line(winR,Y-6,winR,Y+6)+'</g>');
- pieces.push('<g class="plan-door"><circle cx="'+coord(doorR)+'" cy="'+coord(bottom)+'" r="4" fill="#88694e"/>'+
- '<path d="M '+coord(doorL)+' '+coord(bottom)+' A '+coord(r.door.w*px)+' '+coord(r.door.w*px)+' 0 0 1 '+coord(doorEndX)+' '+coord(doorEndY)+'" fill="none" stroke="#c4a98a" stroke-width="1.7" stroke-dasharray="5 4"/>'+
- line(doorR,bottom,doorEndX,doorEndY,'stroke="#88694e" stroke-width="4" stroke-linecap="round"')+'</g>');
- // Escala: largura e profundidade projetadas diretamente em px por metro.
- pieces.push(dimH(X,right,Y-76,fmt(r.w)+' m',Y-8));
- pieces.push(dimV(Y,bottom,X-78,fmt(r.d)+' m',X-8));
- pieces.push('<g class="plan-label"><text x="'+coord((winL+winR)/2)+'" y="'+coord(Y-18)+'" text-anchor="middle">JANELA '+fmt(r.window.w)+' m</text>');
- pieces.push('<text x="'+coord((winL+winR)/2)+'" y="'+coord(Y+20)+'" text-anchor="middle" class="plan-caption">base '+fmt(r.window.sill)+' m · altura '+fmt(r.window.h)+' m</text>');
- pieces.push('<text x="'+coord((doorL+doorR)/2)+'" y="'+coord(bottom+26)+'" text-anchor="middle">PORTA '+fmt(r.door.w)+' m</text>');
- pieces.push('<text x="'+coord(X+w/2)+'" y="'+coord(bottom+85)+'" text-anchor="middle" class="plan-caption">ALTURA DO QUARTO: '+fmt(r.h)+' m</text></g>');
- const sorted=project.objects.filter(o=>visibleOnPlan(o,project)).sort((a,b)=>(a.y+a.h)-(b.y+b.h));
- for(const o of sorted){
-  const ox=X+(o.x+r.w/2)*px,oy=Y+(o.z+r.d/2)*px;
-  const fw=Math.max(4,o.w*px),fh=Math.max(4,o.d*px);
-  const selected=o.id===selectedId;
-  const label=prettyName(o);
-  const displayText=fw>70&&fh>44;
-  pieces.push('<g class="plan-object'+(selected?' selected':'')+'" data-plan-id="'+escapeText(o.id)+'" tabindex="0" role="button" aria-label="'+escapeText(o.name+', '+fmt(o.w)+' por '+fmt(o.d)+' metros')+'" transform="translate('+coord(ox)+' '+coord(oy)+') rotate('+coord(-o.rotation)+')">');
-  pieces.push('<title>'+escapeText(o.name+' · '+fmt(o.w)+' × '+fmt(o.d)+' m')+'</title>');
-  pieces.push('<rect x="'+coord(-fw/2)+'" y="'+coord(-fh/2)+'" width="'+coord(fw)+'" height="'+coord(fh)+'" rx="3" style="--plan-color:'+escapeText(o.color)+'"/>');
-  if(displayText)pieces.push('<text text-anchor="middle" y="-4" class="plan-furniture-label">'+escapeText(label.length>19?label.slice(0,18)+'…':label)+'</text><text text-anchor="middle" y="12" class="plan-furniture-size">'+fmt(o.w)+' × '+fmt(o.d)+'</text>');
-  pieces.push('</g>');
- }
- if(selectedId){
-  const selected=project.objects.find(o=>o.id===selectedId);
-  if(selected)pieces.push('<g class="plan-selected-label"><rect x="'+coord(X)+'" y="'+coord(bottom+45)+'" width="'+coord(w)+'" height="24" rx="6"/><text x="'+coord(X+w/2)+'" y="'+coord(bottom+61)+'" text-anchor="middle">'+escapeText(selected.name+' · '+fmt(selected.w)+' × '+fmt(selected.d)+' m')+'</text></g>');
- }
- pieces.push('</svg>');
- host.innerHTML=pieces.join('');
+ const visible=project.objects.filter(o=>furniture({...o,_project:project}))
+  .sort((a,b)=>(a.y+a.h)-(b.y+b.h)).map((o,index)=>({o,index}));
+ host.innerHTML='<div class="plan-drawing">'+planMarkup(project,selectedId,visible)+'</div>'+legendMarkup(visible,selectedId,project);
 }
 export function attachFloorplanHandlers(host,getProject,onSelect,onCommit,onNotify){
  let drag=null;
- const loc=(e,project)=>{
-   const svg=host.querySelector('svg');
-   if(!svg)return null;
-   const matrix=svg.getScreenCTM();
-   if(!matrix)return null;
-   const point=svg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;
-   const p=point.matrixTransform(matrix.inverse());
-   return {x:(p.x-pad.left)/px-project.room.w/2,z:(p.y-pad.top)/px-project.room.d/2};
+ const position=(event,project)=>{
+  const svg=host.querySelector('.plan-map');
+  if(!svg)return null;
+  const matrix=svg.getScreenCTM();
+  if(!matrix)return null;
+  const p=svg.createSVGPoint();
+  p.x=event.clientX;p.y=event.clientY;
+  const point=p.matrixTransform(matrix.inverse());
+  return {x:(point.x-PAD.left)/PX-project.room.w/2,z:(point.y-PAD.top)/PX-project.room.d/2};
  };
- host.addEventListener('click',e=>{
-   const node=e.target.closest('[data-plan-id]');
-   if(node)onSelect(node.getAttribute('data-plan-id'));
+ host.addEventListener('click',event=>{
+  const el=event.target.closest('[data-plan-id],[data-plan-select]');
+  if(el)onSelect(el.getAttribute('data-plan-id')||el.getAttribute('data-plan-select'));
  });
- host.addEventListener('keydown',e=>{
-   if(e.key!=='Enter'&&e.key!==' ')return;
-   const node=e.target.closest('[data-plan-id]');if(!node)return;
-   e.preventDefault();onSelect(node.getAttribute('data-plan-id'));
+ host.addEventListener('keydown',event=>{
+  if(event.key!=='Enter'&&event.key!==' ')return;
+  const obj=event.target.closest('.plan-object');
+  if(!obj)return;
+  event.preventDefault();onSelect(obj.dataset.planId);
  });
- host.addEventListener('pointerdown',e=>{
-   if(e.button!==0)return;
-   const node=e.target.closest('[data-plan-id]');if(!node)return;
-   const o=getProject().objects.find(q=>q.id===node.getAttribute('data-plan-id'));
-   if(!o)return;
-   onSelect(o.id);
-   if(o.locked){onNotify('Este móvel está fixado. Desmarque a opção para mover.');return;}
-   const p=loc(e,getProject());if(!p)return;
-   drag={id:o.id,x:o.x,z:o.z,start:p,changed:false};
-   host.setPointerCapture(e.pointerId);e.preventDefault();
+ host.addEventListener('pointerdown',event=>{
+  if(event.button!==0)return;
+  const el=event.target.closest('.plan-object');
+  if(!el)return;
+  const obj=getProject().objects.find(o=>o.id===el.dataset.planId);
+  if(!obj)return;
+  const start=position(event,getProject());if(!start)return;
+  onSelect(obj.id);
+  if(obj.locked){onNotify('Este móvel está fixado. Desmarque a opção antes de mover.');return;}
+  drag={id:obj.id,originX:obj.x,originZ:obj.z,start,changed:false};
+  host.setPointerCapture(event.pointerId);
+  event.preventDefault();
  });
- host.addEventListener('pointermove',e=>{
-   if(!drag)return;
-   const p=loc(e,getProject());if(!p)return;
-   const dx=p.x-drag.start.x,dz=p.z-drag.start.z;
-   if(Math.abs(dx)+Math.abs(dz)<.01&&!drag.changed)return;
-   drag.changed=true;
-   onCommit(drag.id,drag.x+dx,drag.z+dz,false);
+ host.addEventListener('pointermove',event=>{
+  if(!drag)return;
+  const now=position(event,getProject());if(!now)return;
+  const dx=now.x-drag.start.x,dz=now.z-drag.start.z;
+  if(!drag.changed&&Math.abs(dx)+Math.abs(dz)<.015)return;
+  drag.changed=true;
+  onCommit(drag.id,drag.originX+dx,drag.originZ+dz,false);
  });
- const finish=e=>{
-   if(!drag)return;
-   const old=drag;drag=null;
-   if(host.hasPointerCapture(e.pointerId))host.releasePointerCapture(e.pointerId);
-   if(old.changed)onCommit(old.id,0,0,true);
- };
- host.addEventListener('pointerup',finish);host.addEventListener('pointercancel',finish);
+ function finish(event){
+  if(!drag)return;
+  const previous=drag;drag=null;
+  if(host.hasPointerCapture(event.pointerId))host.releasePointerCapture(event.pointerId);
+  if(previous.changed)onCommit(previous.id,0,0,true);
+ }
+ host.addEventListener('pointerup',finish);
+ host.addEventListener('pointercancel',finish);
 }
