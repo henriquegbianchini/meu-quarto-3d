@@ -70,14 +70,16 @@
       <div class="render-error" id="render-error" hidden><h2>O 3D não abriu neste navegador</h2><p>Você ainda pode selecionar Planta para ver medidas e editar seus móveis. Tente ativar a aceleração gráfica para usar o 3D.</p></div>
     </section>
 
-    <aside class="sidebar" aria-label="Editor do quarto">
+    <aside class="objects-sidebar" aria-label="Lista de móveis e objetos">
       <div class="panel-tabs" role="tablist"><button id="tab-objects" role="tab" aria-selected="true" class="active">Objetos <span id="object-count">22</span></button><button id="tab-room" role="tab" aria-selected="false">Ambiente</button></div>
       <div id="objects-panel" class="panel-content">
         <div class="section-line"><div><h2>Seu quarto, por partes</h2><p>Toque em um item para editar.</p></div><button id="add" class="icon-button filled" title="Adicionar objeto" aria-label="Adicionar objeto"><svg><use href="#i-plus"/></svg></button></div>
         <label class="search"><svg><use href="#i-eye"/></svg><input id="search" type="search" placeholder="Encontrar um objeto…" aria-label="Buscar objeto"></label>
         <div id="object-list" class="object-list"></div>
-        <section id="inspector" class="inspector" aria-label="Propriedades do objeto"></section>
       </div>
+    </aside>
+    <aside class="sidebar inspector-sidebar" aria-label="Propriedades e ambiente do quarto">
+      <section id="inspector" class="inspector" aria-label="Propriedades do objeto"></section>
       <div id="room-panel" class="panel-content" hidden>
         <div class="section-line"><div><h2>A base do seu espaço</h2><p>Medidas informadas em 25/10/2026.</p></div></div>
         <div class="notice"><span class="notice-dot"></span><span id="room-notice">Dimensões do quarto informadas por você. Objetos e posições sem medidas continuam aproximados.</span></div>
