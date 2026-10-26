@@ -1,0 +1,34 @@
+name: Qualidade Studio Precision
+on:
+  push:
+    branches:
+      - 'feat/studio-precision-*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    name: Integridade, sincronização e exportação
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout da branch isolada
+        uses: actions/checkout@v4
+      - name: Instalar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependências somente para testes e build
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Validar sintaxe
+        run: npm run check:syntax
+      - name: Executar testes offline sem credenciais
+        run: npm test
+      - name: Gerar exportação offline sem sobrescrever as medidas
+        run: |
+          sha256sum projeto-atual.json meu_quarto_medidas.json > /tmp/medidas-before.sha
+          npm run build:offline
+          sha256sum -c /tmp/medidas-before.sha
+          git diff --exit-code -- projeto-atual.json meu_quarto_medidas.json
