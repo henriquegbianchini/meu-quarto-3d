@@ -15,7 +15,7 @@ test('o conflito remoto não pode ser ignorado por Salvar agora',async t=>{
    const path=String(url);
    if(path.endsWith('/user'))return new Response(JSON.stringify({login:'henriquegbianchini'}),{status:200});
    if(init.method==='PUT'){puts++;return new Response(JSON.stringify({message:'sha mismatch'}),{status:409});}
-   return new Response(JSON.stringify({sha:'remote-sha',content:btoa(JSON.stringify(source))}),{status:200});
+   return new Response(JSON.stringify({sha:'remote-sha',content:Buffer.from(JSON.stringify(source),'utf8').toString('base64')}),{status:200});
  };
  const store=createGitHubStore((kind,message)=>events.push({kind,message}));
  await store.load();
@@ -42,7 +42,7 @@ test('resposta de sucesso sem SHA não afirma que foi salvo',async t=>{
  globalThis.fetch=async (url,init={})=>{
    if(String(url).endsWith('/user'))return new Response(JSON.stringify({login:'henriquegbianchini'}),{status:200});
    if(init.method==='PUT')return new Response(JSON.stringify({content:{}}),{status:200});
-   return new Response(JSON.stringify({sha:'initial-sha',content:btoa(JSON.stringify(source))}),{status:200});
+   return new Response(JSON.stringify({sha:'initial-sha',content:Buffer.from(JSON.stringify(source),'utf8').toString('base64')}),{status:200});
  };
  const store=createGitHubStore((kind)=>events.push(kind));
  await store.load();
@@ -60,7 +60,7 @@ test('editores desconectados não fazem PUT e preservam alterações pendentes',
  const source=clone(DEFAULT_PROJECT);
  globalThis.fetch=async (url,init={})=>{
   if(init.method==='PUT')puts++;
-  return new Response(JSON.stringify({sha:'sha',content:btoa(JSON.stringify(source))}),{status:200});
+  return new Response(JSON.stringify({sha:'sha',content:Buffer.from(JSON.stringify(source),'utf8').toString('base64')}),{status:200});
  };
  const store=createGitHubStore(()=>{});
  await store.load();
