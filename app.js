@@ -13,7 +13,7 @@ let project=clone(DEFAULT_PROJECT),selectedId=null,scene=null,history=[],future=
 let previousProject=null;
 let oldDraft=null;
 try{
-  // Leitura única de rascunhos antigos, para migração opcional. Nunca gravamos no localStorage.
+  // Leitura de rascunhos antigos. O novo cache temporário guarda somente edições pendentes, nunca tokens.
   oldDraft=localStorage.getItem('meu-espaco-quarto-v1:'+location.pathname+':original');
 }catch{}
 if(rawEmbedded){
@@ -25,6 +25,25 @@ if(rawEmbedded){
 }
 const initialReferences=['Vista da cama e da janela','Entrada do quarto','Bancada e prateleiras','Parede da entrada','Vista geral','Cama vista da entrada'];
 const references=window.__ROOM_PHOTOS__||initialReferences.map((caption,i)=>({src:'references/quarto-'+(i+1)+'.jpg',caption}));
+
+// A recuperação nunca substitui silenciosamente a versão carregada do GitHub.
+// Se a base SHA mudou, só é permitido baixar a cópia e resolver o conflito.
+if(!rawEmbedded&&cloud.getRecovery()){
+ setTimeout(()=>{
+   const backup=cloud.getRecovery();
+   if(!backup)return;
+   const conflict=backup.stale;
+   modal('Edição anterior não sincronizada',
+    '<p class="modal-copy">Uma cópia temporária das suas alterações foi preservada neste navegador, sem nenhum token ou credencial. O arquivo do GitHub continua sendo a versão oficial.</p>'+
+    (conflict?'<p class="modal-copy">O GitHub já contém outra versão. Por segurança, baixe seu rascunho para comparar; a restauração automática está bloqueada.</p>':
+      '<p class="modal-copy">A versão do GitHub não mudou desde a edição pendente. Você pode recuperá-la e depois conectar o GitHub para salvar.</p>')+
+    '<div class="github-actions">'+
+    (conflict?'':'<button id="recover-pending" class="button primary wide">Recuperar edição pendente</button>')+
+    '<button id="download-pending" class="button secondary wide">Baixar rascunho JSON</button>'+
+    '<button id="discard-pending" class="button secondary wide">Descartar apenas a cópia temporária</button></div>',
+    'RECUPERAÇÃO DE SEGURANÇA');
+ },0);
+}
 
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3200);}
 function persist(){if(rawEmbedded){$('save-status').textContent='Cópia offline · exporte o JSON';return;}cloud.schedule(project);}
@@ -118,6 +137,23 @@ $('modal').addEventListener('click',async e=>{
  if(add)addObject(add.dataset.add);
  if(exp)exportFile(exp.dataset.export);
  if(e.target.closest('#open-github-panel'))showGitHubConnect();
+ if(e.target.closest('#recover-pending')){
+   const recovery=cloud.getRecovery();
+   if(!recovery||recovery.stale){toast('O GitHub possui outra versão. Baixe o JSON para comparar.');return;}
+   try{
+     const restored=validateProject(JSON.parse(recovery.body));
+     commit(()=>{project=restored;selectedId=null;},'Rascunho recuperado. Conecte o GitHub para salvar.');
+     closeModal();
+   }catch(error){toast(error.message||'Rascunho inválido.');}
+ }
+ if(e.target.closest('#download-pending')){
+   const recovery=cloud.getRecovery();
+   if(recovery)download(new Blob([recovery.body],{type:'application/json'}),'Meu_Quarto_Rascunho_Pendente.json');
+ }
+ if(e.target.closest('#discard-pending')){
+   cloud.clearRecovery();closeModal();toast('A cópia temporária foi descartada; o GitHub não foi alterado.');
+ }
+
  if(e.target.closest('#save-github-now')){const accepted=cloud.saveNow(project);toast(accepted?'Solicitada sincronização com o GitHub.':'Há um conflito de versões. Exporte seu JSON antes de tentar novamente.');}
  if(e.target.closest('#disconnect-github')){cloud.disconnect();closeModal();}
  if(e.target.closest('#legacy-project')&&oldDraft){
