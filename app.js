@@ -34,7 +34,7 @@ function undo(){if(!history.length)return;future.push(clone(project));project=hi
 function redo(){if(!future.length)return;history.push(clone(project));project=future.pop();persist();render();toast('Alteração refeita.');}
 function findSelected(){return project.objects.find(o=>o.id===selectedId);}
 function select(id){selectedId=id&&project.objects.some(o=>o.id===id)?id:null;renderList();renderInspector();scene?.setSelection(selectedId);if(currentView==='top')renderFloorplan($('plan-canvas'),project,selectedId);}
-function switchTab(room){$('objects-panel').hidden=room;$('room-panel').hidden=!room;$('tab-objects').classList.toggle('active',!room);$('tab-room').classList.toggle('active',room);$('tab-objects').setAttribute('aria-selected',String(!room));$('tab-room').setAttribute('aria-selected',String(room));}
+function switchTab(room){$('objects-panel').hidden=false;$('inspector').hidden=room;$('room-panel').hidden=!room;$('tab-objects').classList.toggle('active',!room);$('tab-room').classList.toggle('active',room);$('tab-objects').setAttribute('aria-selected',String(!room));$('tab-room').setAttribute('aria-selected',String(room));}
 function render(){renderList();renderInspector();renderRoom();scene?.sync(project);if(currentView==='top')renderFloorplan($('plan-canvas'),project,selectedId);$('undo').disabled=!history.length;$('redo').disabled=!future.length;$('area-text').textContent=fmt(project.room.w*project.room.d,2)+' m²';$('measure-label').textContent=project.estimated?'medidas estimadas':'dimensões informadas';}
 const sideFacing=new Set(['cabinet','tabletop','shelf','monitor','portrait','frames','frame']);
 function dimensionsText(o){if(o.type==='l_shelf')return fmt(o.d*100)+' + '+fmt(o.w*100)+' cm · em L';if(o.type==='frame')return fmt(o.d*100)+' × '+fmt(o.h*100,1)+' cm · quadro';return fmt((sideFacing.has(o.type)?o.d:o.w)*100)+' × '+fmt((sideFacing.has(o.type)?o.w:o.d)*100)+' cm';}
@@ -118,7 +118,7 @@ $('modal').addEventListener('click',async e=>{
  if(add)addObject(add.dataset.add);
  if(exp)exportFile(exp.dataset.export);
  if(e.target.closest('#open-github-panel'))showGitHubConnect();
- if(e.target.closest('#save-github-now')){cloud.saveNow(project);toast('Solicitada sincronização com o GitHub.');}
+ if(e.target.closest('#save-github-now')){const accepted=cloud.saveNow(project);toast(accepted?'Solicitada sincronização com o GitHub.':'Há um conflito de versões. Exporte seu JSON antes de tentar novamente.');}
  if(e.target.closest('#disconnect-github')){cloud.disconnect();closeModal();}
  if(e.target.closest('#legacy-project')&&oldDraft){
    try{const restored=validateProject(JSON.parse(oldDraft));commit(()=>{project=restored;selectedId=null;},'Rascunho antigo recuperado. Conecte o GitHub para salvar.');closeModal();}
