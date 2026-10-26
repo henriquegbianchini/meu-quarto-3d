@@ -24,11 +24,11 @@ jobs:
         run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
       - name: Validar sintaxe
         run: npm run check:syntax
-      - name: Executar testes offline sem credenciais
-        run: npm test
       - name: Gerar exportação offline sem sobrescrever as medidas
         run: |
           sha256sum projeto-atual.json meu_quarto_medidas.json > /tmp/medidas-before.sha
           npm run build:offline
           sha256sum -c /tmp/medidas-before.sha
           git diff --exit-code -- projeto-atual.json meu_quarto_medidas.json
+      - name: Executar regressões do modelo, sincronização, layout e offline
+        run: npm test
