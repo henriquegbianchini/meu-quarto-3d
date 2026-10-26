@@ -1,7 +1,6 @@
 import {readFile,writeFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
-import {DEFAULT_PROJECT} from '../model.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const esbuild=await import(process.argv[2]||'esbuild');
 const result=await esbuild.build({entryPoints:[resolve(root,'app.js')],bundle:true,format:'iife',minify:true,write:false,legalComments:'inline',target:['es2020']});
@@ -13,5 +12,4 @@ html=html.replace('<link rel="stylesheet" href="style.css">',()=>'<style>'+css+'
 const code=result.outputFiles[0].text.replace(/<\/script/gi,'<\\/script');
 html=html.replace('<script type="module" src="app.js"></script>',()=>'<script>window.__ROOM_PHOTOS__='+JSON.stringify(photos).replace(/</g,'\\u003c')+';</script><script>'+code+'</script>');
 await writeFile(resolve(root,'meu_quarto_3d.html'),html);
-await writeFile(resolve(root,'meu_quarto_medidas.json'),JSON.stringify(DEFAULT_PROJECT,null,2));
 console.log(JSON.stringify({offline:'meu_quarto_3d.html',bytes:Buffer.byteLength(html),photos:photos.length}));
