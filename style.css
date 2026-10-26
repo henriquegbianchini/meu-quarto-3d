@@ -397,3 +397,18 @@
 @media(prefers-reduced-motion:reduce){
  .workspace button,.workspace .button{transition:none}
 }
+
+
+/* Distâncias físicas na legenda: não sobrepor números aos móveis. */
+.plan-clearance{
+ margin:10px 8px 8px;padding:12px 13px;
+ background:#F0F4EF;border:1px solid #DAE4DC;border-radius:10px;
+ color:#24352F;
+}
+.plan-clearance>strong{display:block;font-size:12px}
+.plan-clearance>p{font-size:10px;color:#61746A;margin:5px 0 12px;line-height:1.4}
+.plan-clearance-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.plan-clearance-grid>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.plan-clearance-grid span{font-size:10px;color:#61746A}
+.plan-clearance-grid b{font-size:13px;font-weight:650;white-space:nowrap}
+.plan-clearance-grid .plan-clearance-error{color:#B95549}
