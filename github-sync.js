@@ -1,3 +1,4 @@
+import {createDraftRecoveryStore} from './pending-draft-store.js';
 // GitHub Contents API: a origem persistente e o arquivo versionado do projeto.
 // Credencial temporária somente em memória da aba; jamais usar localStorage/cookies.
 const OWNER='henriquegbianchini';
@@ -15,7 +16,7 @@ const utf8Decode=encoded=>{
   return new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 };
 const jsonClean=p=>JSON.stringify(p,null,2)+'\n';
-export function createGitHubStore(onStatus){
+export function createGitHubStore(onStatus,{draftRecovery=createDraftRecoveryStore()}={}){
  let token=null,sha=null,loadedJSON=null,queuedJSON=null,timer=null,busy=false,blocked=false,loadReady=false,failures=0;
  const status=(kind,message)=>onStatus?.(kind,message);
  async function getRemote(authToken){
@@ -33,7 +34,13 @@ export function createGitHubStore(onStatus){
    try{
      const remote=await getRemote();
      sha=remote.sha;loadedJSON=jsonClean(remote.data);loadReady=true;
-     status('idle','Projeto carregado do GitHub · conecte para salvar');
+     const recovery=draftRecovery.read();
+     if(recovery?.body&&recovery.body!==loadedJSON){
+       status('pending','Rascunho anterior sem sincronizar · recuperação disponível');
+     }else{
+       if(recovery?.body)draftRecovery.clearIfMatches(loadedJSON);
+       status('idle','Projeto carregado do GitHub · conecte para salvar');
+     }
      return remote.data;
    }catch(error){
      loadReady=false;blocked=true;
@@ -45,6 +52,7 @@ export function createGitHubStore(onStatus){
    const next=jsonClean(p);
    if(next===loadedJSON&&!busy){queuedJSON=null;clearTimeout(timer);status(token?'saved':'idle',token?'Tudo salvo no GitHub':'Projeto carregado do GitHub · conecte para salvar');return;}
    queuedJSON=next;failures=0;
+   draftRecovery.write(next,sha);
    if(!token){status('pending','Alterações sem salvar · conecte o GitHub');return;}
    if(blocked){status('error','Conflito de versões · exporte seu JSON');return;}
    status('pending','Alterações pendentes de envio…');
@@ -68,6 +76,7 @@ export function createGitHubStore(onStatus){
      const data=await res.json();
      if(!data.content?.sha)throw new Error('O GitHub não confirmou a nova versão.');
      sha=data.content.sha;loadedJSON=content;failures=0;
+     draftRecovery.clearIfMatches(content);
      if(queuedJSON===loadedJSON)queuedJSON=null;
      status(queuedJSON?'pending':'saved',queuedJSON?'Há alterações mais recentes a enviar':'Salvo no GitHub · '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
    }catch(error){
@@ -95,7 +104,12 @@ export function createGitHubStore(onStatus){
    }else status('saved','Conectado ao GitHub · salvamento automático ativo');
    return who.login;
  }
- function state(){return {connected:!!token,pending:!!queuedJSON,busy,blocked,loadReady};}
+ function state(){return {connected:!!token,pending:!!queuedJSON,busy,blocked,loadReady,recoverable:!!draftRecovery.read()};}
+ function getRecovery(){
+   const draft=draftRecovery.read();
+   return draft&&draft.body!==loadedJSON?{...draft,stale:!sha||draft.baseSha!==sha}:null;
+ }
+ function clearRecovery(){draftRecovery.discard();}
  function disconnect(){token=null;clearTimeout(timer);status(queuedJSON?'pending':'idle',queuedJSON?'Desconectado · alterações aguardam conexão':'Desconectado · alterações futuras não serão salvas');}
  function saveNow(project){
    if(blocked){status('error','Conflito de versões · exporte seu JSON antes de tentar novamente');return false;}
@@ -104,5 +118,5 @@ export function createGitHubStore(onStatus){
    if(token&&!busy)void flush();
    return true;
  }
- return {load,connect,schedule,state,disconnect,saveNow};
+ return {load,connect,schedule,state,disconnect,saveNow,getRecovery,clearRecovery};
 }
