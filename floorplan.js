@@ -1,5 +1,6 @@
 // Planta técnica 2D. Geometria e dimensões sempre em metros.
 import {effectiveVisible} from './model.js';
+import {distanceToWalls} from './geometry.js';
 
 const PX=124;
 const PAD={left:108,right:38,top:112,bottom:88};
@@ -68,6 +69,19 @@ function planMarkup(project,selectedId,visible){
  parts.push('</svg>');
  return parts.join('');
 }
+function clearanceMarkup(visible,selectedId,room){
+ const selection=visible.find(item=>item.o.id===selectedId)?.o;
+ if(!selection)return '';
+ const gaps=distanceToWalls(selection,room);
+ const names=[['left','Esquerda'],['right','Direita'],['top','Janela'],['bottom','Entrada']];
+ return '<section class="plan-clearance" aria-label="Distância do móvel selecionado às paredes">'+
+ '<strong>Distâncias às paredes</strong><p>Medidas em escala real · não dependem do zoom</p>'+
+ '<div class="plan-clearance-grid">'+names.map(([key,name])=>{
+  const value=gaps[key];
+  return '<div><span>'+name+'</span><b class="'+(value<0?'plan-clearance-error':'')+'">'+
+  (value<0?'Avanço '+fmt(-value):fmt(value))+' m</b></div>';
+ }).join('')+'</div></section>';
+}
 function legendMarkup(visible,selectedId,project){
  return '<aside class="plan-legend" aria-label="Legenda dos móveis na planta">'+
  '<div class="plan-legend-heading"><strong>Móveis na planta</strong><span>'+visible.length+' representados</span></div>'+
@@ -75,7 +89,7 @@ function legendMarkup(visible,selectedId,project){
  '<button type="button" class="plan-legend-row'+(o.id===selectedId?' selected':'')+'" data-plan-select="'+esc(o.id)+'" aria-pressed="'+String(o.id===selectedId)+'">'+
  '<span class="plan-legend-id">'+String(index+1).padStart(2,'0')+'</span>'+
  '<span class="plan-legend-desc"><strong>'+esc(label(o))+'</strong><small>'+footprint(o)+(o.rotation?' · giro '+fmt(Math.abs(o.rotation))+'°':'')+'</small></span></button>'
- ).join('')+'</div><p class="plan-legend-note">As paredes e aberturas seguem as medidas informadas. Alguns móveis ainda têm posições aproximadas. Itens suspensos aparecem na lista de objetos do editor.</p></aside>';
+ ).join('')+'</div>'+clearanceMarkup(visible,selectedId,project.room)+'<p class="plan-legend-note">As paredes e aberturas seguem as medidas informadas. Alguns móveis ainda têm posições aproximadas. Itens suspensos aparecem na lista de objetos do editor.</p></aside>';
 }
 export function renderFloorplan(host,project,selectedId){
  if(!host)return;
