@@ -96,7 +96,13 @@ export function createGitHubStore(onStatus){
    return who.login;
  }
  function state(){return {connected:!!token,pending:!!queuedJSON,busy,blocked,loadReady};}
- function disconnect(){token=null;clearTimeout(timer);status('idle','Desconectado · alterações futuras não serão salvas');}
- function saveNow(project){blocked=false;failures=0;schedule(project,true);if(token&&!busy)flush();}
+ function disconnect(){token=null;clearTimeout(timer);status(queuedJSON?'pending':'idle',queuedJSON?'Desconectado · alterações aguardam conexão':'Desconectado · alterações futuras não serão salvas');}
+ function saveNow(project){
+   if(blocked){status('error','Conflito de versões · exporte seu JSON antes de tentar novamente');return false;}
+   failures=0;schedule(project,true);
+   clearTimeout(timer);
+   if(token&&!busy)void flush();
+   return true;
+ }
  return {load,connect,schedule,state,disconnect,saveNow};
 }
