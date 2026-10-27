@@ -159,3 +159,23 @@ test('exportações PNG e GLB funcionam com o renderizador disponível',async()=
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+
+test('desktop pode recolher os dois painéis para ampliar o canvas',async()=>{
+ const {page,context,errors}=await open(1440,900);
+ try{
+  const before=await geometry(page);
+  await page.locator('#toggle-objects-pane').click();
+  const afterLeft=await geometry(page);
+  assert.ok(afterLeft.viewport.width>before.viewport.width+180,'Canvas não expandiu ao recolher objetos');
+  await page.locator('#toggle-inspector-pane').click();
+  const afterBoth=await geometry(page);
+  assert.ok(afterBoth.viewport.width>afterLeft.viewport.width+220,'Canvas não expandiu ao recolher inspetor');
+  assert.equal(await page.locator('#toggle-objects-pane').getAttribute('aria-expanded'),'false');
+  await page.locator('#toggle-objects-pane').click();
+  await page.locator('#toggle-inspector-pane').click();
+  const restored=await geometry(page);
+  assert.ok(Math.abs(restored.viewport.width-before.viewport.width)<=2);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
