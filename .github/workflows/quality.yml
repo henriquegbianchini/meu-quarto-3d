@@ -32,3 +32,17 @@ jobs:
           git diff --exit-code -- projeto-atual.json meu_quarto_medidas.json
       - name: Executar regressões do modelo, sincronização, layout e offline
         run: npm test
+      - name: Instalar Playwright e Chromium para testes reais
+        run: |
+          npm install --no-save playwright@1.56.1 --ignore-scripts --no-audit --no-fund --package-lock=false
+          npx playwright install --with-deps chromium
+      - name: Verificar interface em desktop, tablet e celular
+        run: node --test tests/browser.e2e.mjs
+      - name: Arquivar capturas de tela da execução
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-precision-screenshots
+          path: test-evidence-*.png
+          if-no-files-found: ignore
+          retention-days: 7
