@@ -1,4 +1,7 @@
 name: Qualidade Studio Precision
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 on:
   push:
     branches:
@@ -75,4 +78,11 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add meu_quarto_3d.html
           git commit -m 'build(offline): sincronizar HTML autocontido na branch'
+          # Jamais sobrescreva uma revisão mais nova da branch.
+          remote_sha="$(git ls-remote origin refs/heads/feat/studio-precision-foundation | cut -f1)"
+          local_sha="$(git rev-parse HEAD^)"
+          if [ "$remote_sha" != "$local_sha" ]; then
+            echo "Branch avançou durante a execução. HTML será regenerado pela versão mais recente."
+            exit 0
+          fi
           git push origin HEAD:feat/studio-precision-foundation
