@@ -505,3 +505,19 @@
   min-height:0;max-height:none;overflow-y:auto;
  }
 }
+
+
+/* Desktop Studio Precision: ocultação reversível dos painéis */
+.studio-layout-toggle{display:none}
+@media(min-width:1180px){
+ .studio-layout-toggle{display:inline-grid}
+ .workspace.objects-collapsed{grid-template-columns:0 minmax(0,1fr) 312px}
+ .workspace.inspector-collapsed{grid-template-columns:256px minmax(0,1fr) 0}
+ .workspace.objects-collapsed.inspector-collapsed{grid-template-columns:0 minmax(0,1fr) 0}
+ .workspace.objects-collapsed>.objects-sidebar,
+ .workspace.inspector-collapsed>.inspector-sidebar{
+  visibility:hidden;
+  pointer-events:none;
+  overflow:hidden;
+ }
+}
