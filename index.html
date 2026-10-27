@@ -70,7 +70,7 @@
       <div class="render-error" id="render-error" hidden><h2>O 3D não abriu neste navegador</h2><p>Você ainda pode selecionar Planta para ver medidas e editar seus móveis. Tente ativar a aceleração gráfica para usar o 3D.</p></div>
     </section>
 
-    <aside class="objects-sidebar" aria-label="Lista de móveis e objetos">
+    <aside id="mobile-objects-pane" class="objects-sidebar" aria-label="Lista de móveis e objetos">
       <div class="panel-tabs" role="tablist"><button id="tab-objects" role="tab" aria-selected="true" class="active">Objetos <span id="object-count">22</span></button><button id="tab-room" role="tab" aria-selected="false">Ambiente</button></div>
       <div id="objects-panel" class="panel-content">
         <div class="section-line"><div><h2>Seu quarto, por partes</h2><p>Toque em um item para editar.</p></div><button id="add" class="icon-button filled" title="Adicionar objeto" aria-label="Adicionar objeto"><svg><use href="#i-plus"/></svg></button></div>
@@ -78,7 +78,7 @@
         <div id="object-list" class="object-list"></div>
       </div>
     </aside>
-    <aside class="sidebar inspector-sidebar" aria-label="Propriedades e ambiente do quarto">
+    <aside id="mobile-inspector-pane" class="sidebar inspector-sidebar" aria-label="Propriedades e ambiente do quarto">
       <section id="inspector" class="inspector" aria-label="Propriedades do objeto"></section>
       <div id="room-panel" class="panel-content" hidden>
         <div class="section-line"><div><h2>A base do seu espaço</h2><p>Medidas informadas em 25/10/2026.</p></div></div>
@@ -107,6 +107,14 @@
       <footer class="panel-footer"><svg><use href="#i-check"/></svg><span>O projeto principal fica versionado no GitHub. Conecte sua conta para enviar alterações automaticamente.<br><button id="backup-help">Exportar uma cópia de segurança</button></span></footer>
     </aside>
   </main>
+
+  <div id="mobile-panel-scrim" class="mobile-panel-scrim" hidden aria-hidden="true"></div>
+  <nav class="mobile-dock" aria-label="Painéis de edição">
+    <button type="button" id="mobile-panel-objects" aria-controls="mobile-objects-pane" aria-expanded="false">Objetos</button>
+    <button type="button" id="mobile-panel-inspector" aria-controls="mobile-inspector-pane" aria-expanded="false">Propriedades</button>
+    <button type="button" id="mobile-panel-expand" aria-expanded="false" disabled>Expandir</button>
+    <button type="button" id="mobile-panel-close" aria-label="Fechar painel inferior">Fechar</button>
+  </nav>
 
   <div class="toast" id="toast" role="status"></div>
   <dialog id="modal"><div class="modal-top"><div><span class="eyebrow" id="modal-eyebrow">MEU ESPAÇO</span><h2 id="modal-title"></h2></div><button class="icon-button" id="close-modal" aria-label="Fechar"><svg><use href="#i-close"/></svg></button></div><div id="modal-body"></div></dialog>
