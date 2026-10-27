@@ -484,3 +484,24 @@
 @media(prefers-reduced-motion:reduce){
  .workspace>.objects-sidebar,.workspace>.inspector-sidebar{transition:none}
 }
+
+
+/* Tablets: área de trabalho com altura controlada e painéis roláveis */
+@media(min-width:740px) and (max-width:1179px){
+ .workspace{
+  height:calc(100dvh - 68px);
+  min-height:640px;
+  overflow:hidden;
+  grid-template-rows:minmax(360px,1fr) 270px;
+ }
+ .workspace>.viewport{min-height:0}
+ .workspace>.objects-sidebar{
+  min-height:0;height:100%;max-height:none;
+  overflow:hidden;
+ }
+ .workspace>.objects-sidebar #objects-panel{min-height:0;overflow:hidden}
+ .workspace>.objects-sidebar .object-list{min-height:0;overflow-y:auto;max-height:none}
+ .workspace>.inspector-sidebar{
+  min-height:0;max-height:none;overflow-y:auto;
+ }
+}
