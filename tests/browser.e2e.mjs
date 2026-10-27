@@ -88,6 +88,7 @@ test('planta, cotas, objeto selecionado e JSON exportado são consistentes',asyn
   assert.match(text,/JANELA · 2,05 m/);
   await page.locator('[data-plan-select]').first().click();
   assert.equal(await page.locator('.plan-clearance-grid b').count(),4);
+  assert.equal(await page.locator('.plan-clearance-nearest').count(),1);
   await page.locator('#save-menu').click();
   await page.locator('[data-export="json"]').click();
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#ready-download').click()]);
