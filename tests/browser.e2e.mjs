@@ -35,7 +35,7 @@ async function open(width,height){
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>document.querySelector('#loading')?.hidden===true,null,{timeout:15000});
- await page.locator('#object-count').waitFor({timeout:10000});
+ await page.locator('#object-count').waitFor({state:'attached',timeout:10000});
  await page.waitForFunction(()=>document.querySelector('#object-count')?.textContent==='22',null,{timeout:8000});
  return {page,context,errors};
 }
@@ -46,7 +46,7 @@ async function geometry(page){
    const el=document.querySelector(sel),r=el.getBoundingClientRect();
    return {x:r.x,y:r.y,left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height,display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility};
   };
-  return {viewport:rect('#viewport'),objects:rect('.objects-sidebar'),inspector:rect('.inspector-sidebar'),save:rect('#save-status'),bodyScroll:document.documentElement.scrollWidth,windowWidth:innerWidth};
+  return {viewport:rect('#viewport'),objects:rect('.objects-sidebar'),inspector:rect('.inspector-sidebar'),save:rect('#save-status'),bodyScroll:document.documentElement.scrollWidth,pageHeight:document.documentElement.scrollHeight,windowWidth:innerWidth};
  });
 }
 const seen=[];
@@ -59,6 +59,7 @@ for(const [width,height] of [[1440,900],[1024,768],[768,1024],[390,844],[320,640
    const g=await geometry(page);
    seen.push({width,height,geometry:g});
    assert.ok(g.bodyScroll<=width+3,'Overflow: '+JSON.stringify(g));
+   if(width>=740)assert.ok(g.pageHeight<=height+4,'Desktop/tablet não deve expandir a página verticalmente: '+JSON.stringify(g));
    assert.ok(g.viewport.width>=190,'Canvas deve permanecer utilizável '+JSON.stringify(g));
    assert.ok(g.save.width>30&&g.save.display!=='none','Status do GitHub deve aparecer');
    assert.ok(g.objects.width>120&&g.inspector.width>120,'Painéis acessíveis');
