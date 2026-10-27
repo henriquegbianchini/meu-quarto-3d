@@ -95,3 +95,27 @@ test('planta, cotas, objeto selecionado e JSON exportado são consistentes',asyn
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+
+test('mobile usa painel inferior retrátil, sem esconder o canvas ou status',async()=>{
+ const {page,context,errors}=await open(390,844);
+ try{
+  const obj=page.locator('#mobile-panel-objects');
+  const props=page.locator('#mobile-panel-inspector');
+  assert.equal(await obj.count(),1,'Botão Objetos precisa existir');
+  assert.equal(await props.count(),1,'Botão Propriedades precisa existir');
+  assert.equal(await obj.getAttribute('aria-expanded'),'false');
+  await obj.click();
+  assert.equal(await obj.getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('.objects-sidebar').evaluate(el=>el.classList.contains('mobile-open')),true);
+  await page.locator('.objects-sidebar .object-select').first().click();
+  assert.equal(await props.getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('.inspector-sidebar').evaluate(el=>el.classList.contains('mobile-open')),true);
+  await page.locator('#mobile-panel-close').click();
+  assert.equal(await props.getAttribute('aria-expanded'),'false');
+  assert.equal(await page.locator('.inspector-sidebar').evaluate(el=>el.classList.contains('mobile-open')),false);
+  const g=await geometry(page);
+  assert.ok(g.save.width>30&&g.save.display!=='none');
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
