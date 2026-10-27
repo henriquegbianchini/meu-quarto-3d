@@ -34,7 +34,7 @@ async function open(width,height){
  const errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'domcontentloaded'});
- await page.locator('#loading[hidden]').waitFor({timeout:15000});
+ await page.waitForFunction(()=>document.querySelector('#loading')?.hidden===true,null,{timeout:15000});
  await page.locator('#object-count').waitFor({timeout:10000});
  await page.waitForFunction(()=>document.querySelector('#object-count')?.textContent==='22',null,{timeout:8000});
  return {page,context,errors};
