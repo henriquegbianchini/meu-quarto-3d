@@ -45,7 +45,12 @@ Na aba **Planta**, a vista técnica usa SVG vetorial dimensionado a partir de
 um móvel na própria planta; as posições alteradas atualizam o 3D e permitem
 desfazer/refazer. Equipamentos e objetos apoiados são editados na lista para
 não sobrepor as medidas. Posições sem medições são aproximadas; a escala das
-paredes e as cotas seguem as medidas informadas no projeto.
+paredes e as cotas seguem as medidas informadas no projeto. Para o móvel
+selecionado, a legenda calcula distâncias às quatro paredes e ao móvel
+mais próximo, considerando rotação. Também avisa quando há interseção
+volumétrica real; apenas encostar na parede ou em outro móvel não configura
+sobreposição. Cotas derivadas das posições ainda estimadas não constituem
+novas medidas confirmadas.
 
 ## Sincronização pelo GitHub (não pelo navegador)
 
@@ -76,11 +81,18 @@ e posições gravadas nele também são públicas.
 
 Se existia um rascunho antigo salvo neste navegador, pode recuperá-lo uma
 única vez em **Exportar → Recuperar uma edição antiga deste navegador**.
-A aplicação não grava novas edições em `localStorage`.
+Como proteção contra falhas de rede ou fechamento acidental, o editor também
+mantém temporariamente em `localStorage` uma cópia **somente do JSON ainda
+não confirmado no GitHub** (com o SHA de base). Isso não substitui o
+repositório como origem persistente e **nunca armazena o token**. Ao voltar,
+é oferecida recuperação explícita; se a versão remota mudou, só permite
+baixar o rascunho para conciliar manualmente, sem sobrescrever o GitHub.
 
 Continuam disponíveis as exportações JSON, GLB e PNG; o arquivo HTML
-monolítico `meu_quarto_3d.html` é uma cópia offline antiga e **não** oferece
-este sistema de GitHub nem a nova planta até a execução do build offline.
+monolítico `meu_quarto_3d.html` é uma cópia offline com o snapshot embutido,
+atualizada pelo build da branch após os testes. A versão offline não exige
+GitHub e não salva no repositório; exporte o JSON para guardar as mudanças.
+O build nunca sobrescreve `meu_quarto_medidas.json` nem `projeto-atual.json`.
 
 ## Código
 
@@ -111,5 +123,40 @@ O arquivo `.nojekyll` preserva os arquivos estáticos e os módulos locais.
 
 LED de parede, ventilador de chão, mochila e cachorro sobre a cama foram
 excluídos dos dados iniciais. O projeto tem 22 objetos. Projetos JSON antigos
-e dados locais são limpos desses quatro IDs ao abrir; não se trata de
+e dados locais são limpos desses quatro **IDs e tipos** ao abrir; não se trata de
 visibilidade. Os outros objetos, medidas e posições foram preservados.
+
+
+## Studio Precision e controle de qualidade
+
+O layout desktop organiza **Objetos à esquerda, Canvas expansível ao centro
+e Propriedades à direita**. Os botões de painel no cabeçalho podem recolher
+Objetos e Propriedades. No celular, a barra inferior permite abrir,
+expandir, recolher e fechar as gavetas sem bloquear permanentemente o canvas.
+O estado de salvamento permanece no cabeçalho. O código de governança e
+implementação fica em `docs/superpowers/`.
+
+Testes locais (Node.js 22):
+
+```sh
+npm install
+npm run check:syntax
+npm run build:offline
+npm test
+```
+
+No pull request, o GitHub Actions executa regressões de modelo, recuperação,
+colisões, exportação offline e testes Chromium em 1440, 1024, 768, 390 e
+320 pixels, inclusive fluxos reais de edição e exportações JSON, PNG e GLB.
+As imagens ficam disponíveis nos artefatos das execuções. Depois de um
+workflow aprovado, a branch de trabalho sincroniza automaticamente o
+HTML offline gerado; **isso não faz merge, não executa deploy e não altera
+`main`**.
+
+### Sobre Cloudflare
+
+A aplicação continua hospedável diretamente no GitHub Pages: não necessita
+de Worker, Cloudflare Pages, D1 ou backend. Mudar apenas o provedor de
+arquivos estáticos não remove a necessidade de autenticação GitHub para
+gravar `projeto-atual.json`. Qualquer ambiente de preview deve isolar o
+alvo das gravações para não editar dados de produção.
