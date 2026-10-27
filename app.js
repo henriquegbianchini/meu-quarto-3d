@@ -52,6 +52,17 @@ function commit(action,message){const before=clone(project);action();if(JSON.str
 function undo(){if(!history.length)return;future.push(clone(project));project=history.pop();if(!project.objects.some(o=>o.id===selectedId))selectedId=null;persist();render();toast('Alteração desfeita.');}
 function redo(){if(!future.length)return;history.push(clone(project));project=future.pop();persist();render();toast('Alteração refeita.');}
 function findSelected(){return project.objects.find(o=>o.id===selectedId);}
+function toggleDesktopPanel(which){
+ if(!matchMedia('(min-width:1180px)').matches)return;
+ const work=document.querySelector('.workspace');
+ const key=which==='objects'?'objects-collapsed':'inspector-collapsed';
+ const id=which==='objects'?'toggle-objects-pane':'toggle-inspector-pane';
+ const hidden=work.classList.toggle(key);
+ $(id).setAttribute('aria-expanded',String(!hidden));
+ const name=which==='objects'?'lista de objetos':'inspetor';
+ $(id).setAttribute('aria-label',(hidden?'Exibir ':'Recolher ')+name);
+ $(id).title=(hidden?'Exibir ':'Recolher ')+name;
+}
 function setMobilePanel(which){
   const mobile=matchMedia('(max-width:739px)').matches;
   const active=mobile?which:null;
@@ -152,6 +163,8 @@ $('inspector').addEventListener('change',e=>{const el=e.target,key=el.dataset.fi
 $('inspector').addEventListener('click',e=>{const action=e.target.closest('[data-action]')?.dataset.action,o=findSelected();if(!action||!o)return;if(action==='delete')removeObject();if(action==='duplicate')duplicateObject();if(action==='detach')commit(()=>delete o.parentId,'Item desvinculado.');if(action==='rotate'){if(o.locked){toast('Este objeto está com a posição fixada.');return;}commit(()=>{const q={...o,rotation:((o.rotation+90+180)%360+360)%360-180};boundPosition(q,project.room);moveObject(project,o.id,{rotation:q.rotation,x:q.x,z:q.z});});}if(action==='move'){if(o.locked){toast('Desative “Fixar posição” para arrastar.');return;}setMode('move');if(innerWidth<731)$('viewport').scrollIntoView({behavior:'smooth',block:'start'});toast('Arraste o objeto na área do quarto.');}});
 $('tab-objects').onclick=()=>{switchTab(false);if(matchMedia('(max-width:739px)').matches)setMobilePanel('objects');};
 $('tab-room').onclick=()=>{switchTab(true);if(matchMedia('(max-width:739px)').matches)setMobilePanel('inspector');};
+$('toggle-objects-pane').onclick=()=>toggleDesktopPanel('objects');
+$('toggle-inspector-pane').onclick=()=>toggleDesktopPanel('inspector');
 $('mobile-panel-objects').onclick=()=>setMobilePanel('objects');
 $('mobile-panel-inspector').onclick=()=>{switchTab(false);setMobilePanel('inspector');};
 $('mobile-panel-close').onclick=()=>setMobilePanel(null);
