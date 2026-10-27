@@ -521,3 +521,19 @@
   overflow:hidden;
  }
 }
+
+
+/* Planta: relações entre móveis sem cobrir as cotas do SVG */
+.plan-clearance>.plan-clearance-nearest{
+ margin:13px 0 4px;padding-top:11px;
+ border-top:1px solid #DAE4DC;
+ font-size:11px;line-height:1.5;color:#24352F;
+}
+.plan-clearance>.plan-clearance-nearest strong{font-weight:650}
+.plan-clearance>.plan-clearance-warning{
+ padding:9px 10px;border:1px solid #E5B7AF;border-radius:7px;
+ background:#FFF0ED;color:#8B3931;font-size:11px;line-height:1.45;
+}
+.plan-clearance>.plan-clearance-method{
+ font-size:10px;line-height:1.45;color:#61746A;margin-bottom:0;
+}
