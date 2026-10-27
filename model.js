@@ -1,9 +1,16 @@
 export const SCHEMA = 'meu-espaco/quarto-3d/v1';
 export const PROJECT_REVISION = 'medidas-2026-10-25-v2';
 const REMOVED_OBJECT_IDS = new Set(['led','fan','backpack','dog']);
+const RETIRED_TYPES = new Set(['led','fan','backpack','dog']);
 export function removeRetiredObjects(project) {
-  project.objects=project.objects.filter(object=>!REMOVED_OBJECT_IDS.has(object.id));
-  for(const object of project.objects)if(REMOVED_OBJECT_IDS.has(object.parentId))delete object.parentId;
+  // Old backups may contain obsolete types under new IDs. Remove by type AND ID.
+  const removedIds=new Set(project.objects.filter(o=>o&&(
+    REMOVED_OBJECT_IDS.has(o.id)||RETIRED_TYPES.has(o.type)
+  )).map(o=>o.id));
+  project.objects=project.objects.filter(o=>o&&!removedIds.has(o.id));
+  for(const object of project.objects){
+    if(removedIds.has(object.parentId))delete object.parentId;
+  }
   return project;
 }
 export const CATALOG = {
@@ -19,14 +26,10 @@ export const CATALOG = {
   portrait:{label:'Monitor vertical',category:'Equipamento',icon:'top',w:.11,d:.27,h:.51,color:'#252c2c'},
   pc:{label:'Computador',category:'Equipamento',icon:'cube',w:.26,d:.42,h:.43,color:'#222a2c'},
   keyboard:{label:'Teclado e mousepad',category:'Equipamento',icon:'top',w:.3,d:.7,h:.015,color:'#d8d3ce'},
-  fan:{label:'Ventilador de chão',category:'Equipamento',icon:'sun',w:.49,d:.3,h:.59,color:'#808c88'},
   cans:{label:'Coleção de latas',category:'Decoração',icon:'cube',w:.14,d:1.18,h:.27,color:'#9a586a'},
   books:{label:'Livros e colecionáveis',category:'Decoração',icon:'folder',w:.17,d:.55,h:.25,color:'#b6aa83'},
   frames:{label:'Conjunto de quadros',category:'Parede',icon:'top',w:.035,d:.72,h:.57,color:'#252e2b',y:1.8},
   frame:{label:'Quadro individual',category:'Parede',icon:'top',w:.025,d:.30,h:.225,color:'#252e2b',y:1.95},
-  led:{label:'LED de parede',category:'Parede',icon:'sun',w:1.1,d:.035,h:.86,color:'#e6e4d5',y:.95},
-  backpack:{label:'Mochila',category:'Objeto pessoal',icon:'folder',w:.3,d:.2,h:.47,color:'#272c2a'},
-  dog:{label:'Cachorro (simplificado)',category:'Representação',icon:'cube',w:.68,d:.39,h:.23,color:'#222521'},
   wardrobe:{label:'Guarda-roupa',category:'Móvel',icon:'cube',w:1.2,d:.55,h:2.1,color:'#c4b59d'},
   nightstand:{label:'Mesa de cabeceira',category:'Móvel',icon:'top',w:.42,d:.38,h:.5,color:'#b2a085'},
   rug:{label:'Tapete',category:'Decoração',icon:'top',w:1.2,d:1.6,h:.012,color:'#b9ab94'},
@@ -105,7 +108,9 @@ export function validateProject(raw) {
   for(const k of ['wallColor','floorColor','woodColor'])p.room[k]=color(r[k],p.room[k]);p.room.tile=finite(r.tile,.15,1,.45);
   if(r.window){const v=r.window;p.room.window={w:finite(v.w,.3,p.room.w-.2,1.4),h:finite(v.h,.3,p.room.h-.5,1.1),sill:finite(v.sill,.2,p.room.h-.5,1),center:finite(v.center,-p.room.w/2+.3,p.room.w/2-.3,0)};}
   if(r.door){const v=r.door;p.room.door={w:finite(v.w,.5,Math.min(1.5,p.room.w-.2),.78),h:finite(v.h,1.8,p.room.h-.1,2.1),offset:finite(v.offset,0,p.room.w-.6,0),angle:finite(v.angle,0,100,83)};}
-  const ids=new Set();p.objects=raw.objects.map((v,i)=>{
+  // Strip retired entries before type validation; unrelated custom objects survive.
+  const incoming=removeRetiredObjects({objects:clone(raw.objects)}).objects;
+  const ids=new Set();p.objects=incoming.map((v,i)=>{
     if(!v||!CATALOG[v.type])throw new Error('O projeto contém um tipo de objeto desconhecido.');
     const id=String(v.id||'item-'+i).slice(0,80);if(ids.has(id))throw new Error('O projeto contém identificadores repetidos.');ids.add(id);
     const q={id,type:v.type,name:String(v.name||CATALOG[v.type].label).slice(0,100),x:finite(v.x,-20,20,0),z:finite(v.z,-20,20,0),y:finite(v.y,0,5,0),rotation:finite(v.rotation,-3600,3600,0),w:finite(v.w,.01,10,1),d:finite(v.d,.01,10,1),h:finite(v.h,.005,5,1),visible:v.visible!==false,locked:v.locked===true,color:color(v.color,CATALOG[v.type].color)};

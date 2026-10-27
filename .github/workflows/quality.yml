@@ -1,0 +1,88 @@
+name: Qualidade Studio Precision
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+on:
+  push:
+    branches:
+      - 'feat/studio-precision-*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    name: Integridade, sincronização e exportação
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout da branch isolada
+        uses: actions/checkout@v4
+      - name: Instalar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependências somente para testes e build
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Validar sintaxe
+        run: npm run check:syntax
+      - name: Gerar exportação offline sem sobrescrever as medidas
+        run: |
+          sha256sum projeto-atual.json meu_quarto_medidas.json > /tmp/medidas-before.sha
+          npm run build:offline
+          sha256sum -c /tmp/medidas-before.sha
+          git diff --exit-code -- projeto-atual.json meu_quarto_medidas.json
+      - name: Executar regressões do modelo, sincronização, layout e offline
+        run: npm test
+      - name: Instalar Playwright e Chromium para testes reais
+        run: |
+          npm install --no-save playwright@1.56.1 --ignore-scripts --no-audit --no-fund --package-lock=false
+          npx playwright install --with-deps chromium
+      - name: Verificar interface em desktop, tablet e celular
+        run: node --test tests/browser.e2e.mjs
+      - name: Arquivar capturas de tela da execução
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-precision-screenshots
+          path: test-evidence-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  atualizar-offline-na-branch:
+    name: Atualizar HTML offline apenas na branch de trabalho
+    if: github.event_name == 'push' && github.ref == 'refs/heads/feat/studio-precision-foundation'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - run: npm run build:offline
+      - name: Commitar HTML autocontido somente se mudou
+        shell: bash
+        run: |
+          if git diff --quiet -- meu_quarto_3d.html; then
+            echo 'HTML offline já sincronizado'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add meu_quarto_3d.html
+          git commit -m 'build(offline): sincronizar HTML autocontido na branch'
+          # Jamais sobrescreva uma revisão mais nova da branch.
+          remote_sha="$(git ls-remote origin refs/heads/feat/studio-precision-foundation | cut -f1)"
+          local_sha="$(git rev-parse HEAD^)"
+          if [ "$remote_sha" != "$local_sha" ]; then
+            echo "Branch avançou durante a execução. HTML será regenerado pela versão mais recente."
+            exit 0
+          fi
+          git push origin HEAD:feat/studio-precision-foundation

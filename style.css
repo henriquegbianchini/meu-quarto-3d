@@ -264,3 +264,276 @@
  .plan-legend{max-height:89px}
  .plan-hint{bottom:57px;max-width:95%;font-size:10px}
 }
+
+
+/* Studio Precision v1 — trilhos técnicos independentes, canvas central expansível. */
+:root{
+ --paper:#F7F8F5;--ink:#24352F;--muted:#61746A;--line:#DAE4DC;
+ --sage:#44745C;--soft:#DBEBDD;--white:#FFFFFF;--danger:#B95549;
+ --studio-canvas:#E9F0EA;--studio-subtle:#F0F4EF;
+}
+.topbar{
+ height:68px;min-height:68px;padding:0 20px;gap:20px;
+ background:#FFFFFF;border-color:var(--line);
+}
+.brandmark{background:#30583F;color:#FFFFFF;border-radius:10px;width:38px;height:38px}
+.project-title{min-width:0;padding-left:20px}
+.save-status-button{max-width:min(31vw,320px);font-size:11px;line-height:1.45}
+.save-status-button[data-state="saved"]{color:#277451}
+.save-status-button[data-state="error"]{color:#B95549;font-weight:600}
+.save-status-button[data-state="pending"],.save-status-button[data-state="saving"]{color:#956723}
+.workspace{
+ display:grid;grid-template-columns:256px minmax(0,1fr) 312px;
+ height:calc(100dvh - 68px);min-height:590px;overflow:hidden;
+}
+.workspace>.viewport{
+ grid-column:2;grid-row:1;min-width:0;min-height:0;
+ background:radial-gradient(ellipse at 58% 45%,#DCE8DD 0%,var(--studio-canvas) 64%,var(--paper) 100%);
+}
+.workspace>.objects-sidebar{
+ grid-column:1;grid-row:1;min-width:0;min-height:0;
+ display:flex;flex-direction:column;overflow:hidden;
+ border-right:1px solid var(--line);background:var(--white);
+}
+.objects-sidebar .panel-tabs{
+ position:static;flex-shrink:0;gap:18px;padding:22px 16px 0;
+ background:#FFFFFF;
+}
+.objects-sidebar .panel-tabs button{font-size:12px}
+.objects-sidebar #objects-panel{
+ flex:1;display:flex;flex-direction:column;
+ min-height:0;overflow:hidden;padding:18px 16px;
+}
+.objects-sidebar .section-line{flex-shrink:0}
+.objects-sidebar .section-line h2{font-size:16px}
+.objects-sidebar .section-line p{font-size:11px}
+.objects-sidebar .search{flex-shrink:0;margin:16px 0 12px;background:var(--studio-subtle)}
+.objects-sidebar .search input{font-size:12px}
+.objects-sidebar .object-list{
+ flex:1;min-height:0;max-height:none;overflow-y:auto;
+ display:block;scrollbar-width:thin;
+}
+.objects-sidebar .object-row{min-height:58px;margin-bottom:5px}
+.objects-sidebar .object-info strong{font-size:12px;max-width:160px}
+.objects-sidebar .object-info small{font-size:10px}
+.workspace>.inspector-sidebar{
+ grid-column:3;grid-row:1;min-height:0;min-width:0;
+ border-left:1px solid var(--line);
+ background:#FFFFFF;display:flex;flex-direction:column;overflow-y:auto;
+}
+.inspector-sidebar #inspector{
+ padding:22px 18px 28px;margin:0;border-top:0;
+ min-width:0;min-height:0;
+}
+.inspector-sidebar #room-panel{padding:22px 18px;min-height:0}
+.inspector-sidebar .panel-footer{margin-top:auto}
+.inspector-sidebar .inspector-top h3{font-size:15px}
+.inspector-sidebar .form-grid label,
+.inspector-sidebar .full-label{font-size:12px}
+.inspector-sidebar .form-grid input,
+.inspector-sidebar .full-label input{min-height:42px;background:#FFFFFF;border-color:var(--line);font-size:13px}
+.inspector-sidebar .inspector-empty{font-size:13px;background:var(--studio-subtle)}
+.workspace .view-switch,.workspace .tools,.workspace .dimension-badge{box-shadow:0 7px 25px #24352F16}
+.workspace .object-row.selected{background:var(--soft)}
+.workspace .object-select:focus-visible,.workspace .visibility-button:focus-visible{outline:3px solid var(--sage);outline-offset:2px}
+@media(max-width:1179px) and (min-width:740px){
+ .workspace{
+  grid-template-columns:226px minmax(0,1fr);
+  grid-template-rows:minmax(540px,72dvh) minmax(270px,auto);
+  height:auto;min-height:calc(100dvh - 68px);overflow:visible;
+ }
+ .workspace>.objects-sidebar{grid-column:1;grid-row:1 / 3;min-height:540px}
+ .workspace>.viewport{grid-column:2;grid-row:1;min-height:540px}
+ .workspace>.inspector-sidebar{grid-column:2;grid-row:2;min-height:270px;max-height:520px;border-top:1px solid var(--line);border-left:0}
+ .objects-sidebar #objects-panel{min-height:0}
+ .workspace .view-switch{right:15px}
+}
+@media(max-width:739px){
+ .topbar{height:64px;min-height:64px;padding:0 10px;gap:8px}
+ .topbar .brand{font-size:12px}
+ .topbar .brandmark{width:31px;height:31px}
+ .project-title{
+  display:flex;flex:1;min-width:70px;
+  padding:0;margin:0;border:0;justify-content:center;
+ }
+ .project-title strong{display:none}
+ .save-status-button{
+  display:block;max-width:100%;width:100%;
+  font-size:10px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;text-align:left;
+ }
+ .header-actions{gap:2px}
+ .header-actions .icon-button{width:30px;height:33px}
+ #github-connect{padding:9px 8px;margin-left:1px}
+ .workspace{
+  display:flex;flex-direction:column;
+  height:auto;min-height:calc(100dvh - 64px);overflow:visible;
+ }
+ .workspace>.viewport{
+  order:0;height:63dvh;min-height:400px;max-height:none;flex:0 0 auto;
+ }
+ .workspace>.inspector-sidebar{
+  order:1;display:flex;flex:0 0 auto;
+  max-height:440px;overflow-y:auto;
+  border-left:0;border-top:1px solid var(--line);
+ }
+ .inspector-sidebar #inspector{padding:20px 18px}
+ .workspace>.objects-sidebar{
+  order:2;display:flex;flex:0 0 auto;
+  min-height:250px;border-right:0;border-top:1px solid var(--line);
+ }
+ .objects-sidebar #objects-panel{display:flex;min-height:240px}
+ .objects-sidebar .object-list{max-height:280px;display:block}
+ .objects-sidebar .object-row{min-height:56px}
+ .workspace .inspector-sidebar .panel-footer{margin-top:0}
+}
+@media(max-width:420px){
+ .topbar .brand>span:last-child{display:none}
+ .topbar .brand{flex-shrink:0}
+ .topbar .project-title{display:flex;max-width:none}
+ .topbar #github-connect span{font-size:9px}
+ .topbar #undo,.topbar #redo{width:28px}
+}
+@media(prefers-reduced-motion:reduce){
+ .workspace button,.workspace .button{transition:none}
+}
+
+
+/* Distâncias físicas na legenda: não sobrepor números aos móveis. */
+.plan-clearance{
+ margin:10px 8px 8px;padding:12px 13px;
+ background:#F0F4EF;border:1px solid #DAE4DC;border-radius:10px;
+ color:#24352F;
+}
+.plan-clearance>strong{display:block;font-size:12px}
+.plan-clearance>p{font-size:10px;color:#61746A;margin:5px 0 12px;line-height:1.4}
+.plan-clearance-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.plan-clearance-grid>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.plan-clearance-grid span{font-size:10px;color:#61746A}
+.plan-clearance-grid b{font-size:13px;font-weight:650;white-space:nowrap}
+.plan-clearance-grid .plan-clearance-error{color:#B95549}
+
+
+/* Studio Precision mobile — canvas livre, gavetas reais e comandos persistentes */
+.mobile-dock,.mobile-panel-scrim{display:none}
+@media(max-width:739px){
+ body{overflow-x:hidden}
+ .topbar{position:relative;z-index:70}
+ .workspace>.viewport,
+ body.floorplan-mode .workspace>.viewport{
+  height:calc(100dvh - 128px);
+  min-height:360px;
+  max-height:none;
+  width:100%;
+  flex:0 0 auto;
+ }
+ .workspace>.objects-sidebar,
+ .workspace>.inspector-sidebar{
+  position:fixed;
+  left:0;right:0;bottom:64px;top:auto;
+  width:100%;height:min(68dvh,590px);max-height:min(68dvh,590px);
+  min-height:0;z-index:51;
+  border-radius:17px 17px 0 0;
+  border:1px solid var(--line);
+  background:var(--white);
+  box-shadow:0 -12px 40px #24352F25;
+  overflow-y:auto;
+  transform:translateY(calc(100% + 66px));
+  visibility:hidden;
+  pointer-events:none;
+  transition:transform .18s ease,visibility .18s;
+ }
+ .workspace>.objects-sidebar.mobile-open,
+ .workspace>.inspector-sidebar.mobile-open{
+  transform:translateY(0);
+  visibility:visible;
+  pointer-events:auto;
+ }
+ .workspace>.objects-sidebar.mobile-expanded,
+ .workspace>.inspector-sidebar.mobile-expanded{
+  height:calc(100dvh - 128px);
+  max-height:calc(100dvh - 128px);
+ }
+ .workspace>.objects-sidebar #objects-panel{min-height:0;flex:1;padding-bottom:18px}
+ .workspace>.objects-sidebar .object-list{max-height:none;min-height:100px;flex:1}
+ .workspace>.inspector-sidebar #inspector{min-height:0}
+ .mobile-dock{
+  display:flex;align-items:center;gap:4px;
+  position:fixed;bottom:0;left:0;right:0;z-index:60;
+  height:64px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));
+  box-sizing:content-box;
+  background:#FFFFFF;border-top:1px solid var(--line);
+  box-shadow:0 -4px 16px #24352F12;
+ }
+ .mobile-dock button{
+  min-width:0;flex:1;height:44px;min-height:44px;
+  padding:5px 4px;border-radius:9px;
+  font-size:11px;font-weight:600;color:var(--ink);
+ }
+ .mobile-dock button[aria-expanded="true"]{background:var(--soft);color:#30583F}
+ .mobile-dock button:disabled{opacity:.35}
+ .mobile-panel-scrim:not([hidden]){
+  display:block;position:fixed;z-index:50;
+  inset:64px 0 64px;background:#24352F55;
+ }
+}
+@media(max-width:360px){
+ .mobile-dock{gap:2px;padding-left:5px;padding-right:5px}
+ .mobile-dock button{font-size:10px;padding:5px 2px}
+}
+@media(prefers-reduced-motion:reduce){
+ .workspace>.objects-sidebar,.workspace>.inspector-sidebar{transition:none}
+}
+
+
+/* Tablets: área de trabalho com altura controlada e painéis roláveis */
+@media(min-width:740px) and (max-width:1179px){
+ .workspace{
+  height:calc(100dvh - 68px);
+  min-height:640px;
+  overflow:hidden;
+  grid-template-rows:minmax(360px,1fr) 270px;
+ }
+ .workspace>.viewport{min-height:0}
+ .workspace>.objects-sidebar{
+  min-height:0;height:100%;max-height:none;
+  overflow:hidden;
+ }
+ .workspace>.objects-sidebar #objects-panel{min-height:0;overflow:hidden}
+ .workspace>.objects-sidebar .object-list{min-height:0;overflow-y:auto;max-height:none}
+ .workspace>.inspector-sidebar{
+  min-height:0;max-height:none;overflow-y:auto;
+ }
+}
+
+
+/* Desktop Studio Precision: ocultação reversível dos painéis */
+.studio-layout-toggle{display:none}
+@media(min-width:1180px){
+ .studio-layout-toggle{display:inline-grid}
+ .workspace.objects-collapsed{grid-template-columns:0 minmax(0,1fr) 312px}
+ .workspace.inspector-collapsed{grid-template-columns:256px minmax(0,1fr) 0}
+ .workspace.objects-collapsed.inspector-collapsed{grid-template-columns:0 minmax(0,1fr) 0}
+ .workspace.objects-collapsed>.objects-sidebar,
+ .workspace.inspector-collapsed>.inspector-sidebar{
+  visibility:hidden;
+  pointer-events:none;
+  overflow:hidden;
+ }
+}
+
+
+/* Planta: relações entre móveis sem cobrir as cotas do SVG */
+.plan-clearance>.plan-clearance-nearest{
+ margin:13px 0 4px;padding-top:11px;
+ border-top:1px solid #DAE4DC;
+ font-size:11px;line-height:1.5;color:#24352F;
+}
+.plan-clearance>.plan-clearance-nearest strong{font-weight:650}
+.plan-clearance>.plan-clearance-warning{
+ padding:9px 10px;border:1px solid #E5B7AF;border-radius:7px;
+ background:#FFF0ED;color:#8B3931;font-size:11px;line-height:1.45;
+}
+.plan-clearance>.plan-clearance-method{
+ font-size:10px;line-height:1.45;color:#61746A;margin-bottom:0;
+}

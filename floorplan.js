@@ -1,5 +1,6 @@
 // Planta técnica 2D. Geometria e dimensões sempre em metros.
 import {effectiveVisible} from './model.js';
+import {distanceToWalls,footprintGap,detectFloorCollisions} from './geometry.js';
 
 const PX=124;
 const PAD={left:108,right:38,top:112,bottom:88};
@@ -68,6 +69,26 @@ function planMarkup(project,selectedId,visible){
  parts.push('</svg>');
  return parts.join('');
 }
+function clearanceMarkup(visible,selectedId,project){
+ const selection=visible.find(item=>item.o.id===selectedId)?.o;
+ if(!selection)return '';
+ const gaps=distanceToWalls(selection,project.room);
+ const names=[['left','Esquerda'],['right','Direita'],['top','Janela'],['bottom','Entrada']];
+ const nearest=visible.filter(({o})=>o.id!==selectedId)
+  .map(({o})=>({name:o.name,distance:footprintGap(selection,o)}))
+  .sort((a,b)=>a.distance-b.distance)[0];
+ const collisions=detectFloorCollisions(project,selectedId);
+ return '<section class="plan-clearance" aria-label="Distâncias do móvel selecionado">'+
+ '<strong>Distâncias às paredes</strong><p>Calculadas em metros · independentes do zoom</p>'+
+ '<div class="plan-clearance-grid">'+names.map(([key,name])=>{
+  const value=gaps[key];
+  return '<div><span>'+name+'</span><b class="'+(value<0?'plan-clearance-error':'')+'">'+
+  (value<0?'Avanço '+fmt(-value):fmt(value))+' m</b></div>';
+ }).join('')+'</div>'+
+ (nearest?'<p class="plan-clearance-nearest"><strong>Móvel mais próximo:</strong> '+esc(nearest.name)+' · '+fmt(nearest.distance)+' m</p>':'')+
+ (collisions.length?'<p class="plan-clearance-warning" role="status">Possível sobreposição com: '+esc(collisions.map(o=>o.name).join(', '))+'</p>':'')+
+ '<p class="plan-clearance-method">Distâncias derivadas das posições do projeto; algumas posições ainda são estimadas.</p></section>';
+}
 function legendMarkup(visible,selectedId,project){
  return '<aside class="plan-legend" aria-label="Legenda dos móveis na planta">'+
  '<div class="plan-legend-heading"><strong>Móveis na planta</strong><span>'+visible.length+' representados</span></div>'+
@@ -75,7 +96,7 @@ function legendMarkup(visible,selectedId,project){
  '<button type="button" class="plan-legend-row'+(o.id===selectedId?' selected':'')+'" data-plan-select="'+esc(o.id)+'" aria-pressed="'+String(o.id===selectedId)+'">'+
  '<span class="plan-legend-id">'+String(index+1).padStart(2,'0')+'</span>'+
  '<span class="plan-legend-desc"><strong>'+esc(label(o))+'</strong><small>'+footprint(o)+(o.rotation?' · giro '+fmt(Math.abs(o.rotation))+'°':'')+'</small></span></button>'
- ).join('')+'</div><p class="plan-legend-note">As paredes e aberturas seguem as medidas informadas. Alguns móveis ainda têm posições aproximadas. Itens suspensos aparecem na lista de objetos do editor.</p></aside>';
+ ).join('')+'</div>'+clearanceMarkup(visible,selectedId,project)+'<p class="plan-legend-note">As paredes e aberturas seguem as medidas informadas. Alguns móveis ainda têm posições aproximadas. Itens suspensos aparecem na lista de objetos do editor.</p></aside>';
 }
 export function renderFloorplan(host,project,selectedId){
  if(!host)return;

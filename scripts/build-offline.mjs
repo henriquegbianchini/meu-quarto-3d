@@ -1,17 +1,21 @@
 import {readFile,writeFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
-import {DEFAULT_PROJECT} from '../model.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const esbuild=await import(process.argv[2]||'esbuild');
-const result=await esbuild.build({entryPoints:[resolve(root,'app.js')],bundle:true,format:'iife',minify:true,write:false,legalComments:'inline',target:['es2020']});
+const result=await esbuild.build({entryPoints:[resolve(root,'app.js')],bundle:true,format:'esm',minify:true,write:false,legalComments:'inline',target:['es2022']});
 let html=await readFile(resolve(root,'index.html'),'utf8');
 const css=await readFile(resolve(root,'style.css'),'utf8');
 const captions=['Vista da cama e da janela','Entrada do quarto','Bancada e prateleiras','Parede da entrada','Vista geral','Cama vista da entrada'];
 const photos=await Promise.all(captions.map(async(caption,i)=>({caption,src:'data:image/jpeg;base64,'+(await readFile(resolve(root,'references/quarto-'+(i+1)+'.jpg'))).toString('base64')})));
 html=html.replace('<link rel="stylesheet" href="style.css">',()=>'<style>'+css+'</style>');
-const code=result.outputFiles[0].text.replace(/<\/script/gi,'<\\/script');
+const bundled=result.outputFiles[0].text.replace(/<\/script/gi,'<\\/script');
+const code='(async()=>{\n'+bundled+'\n})().catch(error=>{console.error(error);document.getElementById("render-error")?.removeAttribute("hidden");});';
 html=html.replace('<script type="module" src="app.js"></script>',()=>'<script>window.__ROOM_PHOTOS__='+JSON.stringify(photos).replace(/</g,'\\u003c')+';</script><script>'+code+'</script>');
+// A cópia única funciona sem GitHub: carrega o mesmo snapshot do projeto atual.
+const snapshot=await readFile(resolve(root,'projeto-atual.json'),'utf8');
+const embedded='<script id="embedded-project" type="application/json">null</script>';
+if(!html.includes(embedded))throw new Error('Marcador do projeto offline não encontrado.');
+html=html.replace(embedded,'<script id="embedded-project" type="application/json">'+snapshot.replace(/</g,'\\u003c')+'</script>');
 await writeFile(resolve(root,'meu_quarto_3d.html'),html);
-await writeFile(resolve(root,'meu_quarto_medidas.json'),JSON.stringify(DEFAULT_PROJECT,null,2));
 console.log(JSON.stringify({offline:'meu_quarto_3d.html',bytes:Buffer.byteLength(html),photos:photos.length}));
