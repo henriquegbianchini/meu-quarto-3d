@@ -412,3 +412,75 @@
 .plan-clearance-grid span{font-size:10px;color:#61746A}
 .plan-clearance-grid b{font-size:13px;font-weight:650;white-space:nowrap}
 .plan-clearance-grid .plan-clearance-error{color:#B95549}
+
+
+/* Studio Precision mobile — canvas livre, gavetas reais e comandos persistentes */
+.mobile-dock,.mobile-panel-scrim{display:none}
+@media(max-width:739px){
+ body{overflow-x:hidden}
+ .topbar{position:relative;z-index:70}
+ .workspace>.viewport,
+ body.floorplan-mode .workspace>.viewport{
+  height:calc(100dvh - 128px);
+  min-height:360px;
+  max-height:none;
+  width:100%;
+  flex:0 0 auto;
+ }
+ .workspace>.objects-sidebar,
+ .workspace>.inspector-sidebar{
+  position:fixed;
+  left:0;right:0;bottom:64px;top:auto;
+  width:100%;height:min(68dvh,590px);max-height:min(68dvh,590px);
+  min-height:0;z-index:51;
+  border-radius:17px 17px 0 0;
+  border:1px solid var(--line);
+  background:var(--white);
+  box-shadow:0 -12px 40px #24352F25;
+  overflow-y:auto;
+  transform:translateY(calc(100% + 66px));
+  visibility:hidden;
+  pointer-events:none;
+  transition:transform .18s ease,visibility .18s;
+ }
+ .workspace>.objects-sidebar.mobile-open,
+ .workspace>.inspector-sidebar.mobile-open{
+  transform:translateY(0);
+  visibility:visible;
+  pointer-events:auto;
+ }
+ .workspace>.objects-sidebar.mobile-expanded,
+ .workspace>.inspector-sidebar.mobile-expanded{
+  height:calc(100dvh - 128px);
+  max-height:calc(100dvh - 128px);
+ }
+ .workspace>.objects-sidebar #objects-panel{min-height:0;flex:1;padding-bottom:18px}
+ .workspace>.objects-sidebar .object-list{max-height:none;min-height:100px;flex:1}
+ .workspace>.inspector-sidebar #inspector{min-height:0}
+ .mobile-dock{
+  display:flex;align-items:center;gap:4px;
+  position:fixed;bottom:0;left:0;right:0;z-index:60;
+  height:64px;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));
+  box-sizing:content-box;
+  background:#FFFFFF;border-top:1px solid var(--line);
+  box-shadow:0 -4px 16px #24352F12;
+ }
+ .mobile-dock button{
+  min-width:0;flex:1;height:44px;min-height:44px;
+  padding:5px 4px;border-radius:9px;
+  font-size:11px;font-weight:600;color:var(--ink);
+ }
+ .mobile-dock button[aria-expanded="true"]{background:var(--soft);color:#30583F}
+ .mobile-dock button:disabled{opacity:.35}
+ .mobile-panel-scrim:not([hidden]){
+  display:block;position:fixed;z-index:50;
+  inset:64px 0 64px;background:#24352F55;
+ }
+}
+@media(max-width:360px){
+ .mobile-dock{gap:2px;padding-left:5px;padding-right:5px}
+ .mobile-dock button{font-size:10px;padding:5px 2px}
+}
+@media(prefers-reduced-motion:reduce){
+ .workspace>.objects-sidebar,.workspace>.inspector-sidebar{transition:none}
+}
