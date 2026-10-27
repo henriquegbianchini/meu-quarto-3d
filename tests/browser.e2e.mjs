@@ -119,3 +119,42 @@ test('mobile usa painel inferior retrátil, sem esconder o canvas ou status',asy
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+
+test('criar objeto, desfazer, refazer e excluir preserva projeto padrão',async()=>{
+ const {page,context,errors}=await open(1440,900);
+ try{
+  await page.locator('#add').click();
+  await page.locator('[data-add="block"]').click();
+  assert.equal(await page.locator('#object-count').textContent(),'23');
+  await page.locator('#undo').click();
+  assert.equal(await page.locator('#object-count').textContent(),'22');
+  await page.locator('#redo').click();
+  assert.equal(await page.locator('#object-count').textContent(),'23');
+  await page.locator('.object-row.selected .object-select').click();
+  await page.locator('[data-action="delete"]').click();
+  assert.equal(await page.locator('#object-count').textContent(),'22');
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
+
+test('exportações PNG e GLB funcionam com o renderizador disponível',async()=>{
+ const {page,context,errors}=await open(1440,900);
+ try{
+  assert.equal(await page.locator('#scene canvas').count(),1);
+  assert.equal(await page.locator('#render-error').evaluate(el=>el.hidden),true);
+  for(const [type,magic] of [
+   ['png',Buffer.from([0x89,0x50,0x4e,0x47])],
+   ['glb',Buffer.from('glTF')]
+  ]){
+   await page.locator('#save-menu').click();
+   await page.locator('[data-export="'+type+'"]').click();
+   await page.locator('#ready-download').waitFor({timeout:25000});
+   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#ready-download').click()]);
+   const binary=await readFile(await download.path());
+   assert.ok(binary.subarray(0,4).equals(magic),'Assinatura esperada para '+type);
+   await page.waitForTimeout(300);
+  }
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
