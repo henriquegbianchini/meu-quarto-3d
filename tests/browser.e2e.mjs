@@ -180,3 +180,20 @@ test('desktop pode recolher os dois painéis para ampliar o canvas',async()=>{
   assert.deepEqual(errors,[]);
  }finally{await context.close();}
 });
+
+
+test('arquivo HTML offline abre sem API externa, preserva 22 objetos e planta',async()=>{
+ const context=await browser.newContext({viewport:{width:960,height:720}});
+ await context.route('https://api.github.com/**',route=>route.abort());
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',err=>errors.push(err.message));
+ try{
+  await page.goto('http://127.0.0.1:'+port+'/meu_quarto_3d.html',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.querySelector('#loading')?.hidden===true,null,{timeout:15000});
+  assert.equal(await page.locator('#object-count').textContent(),'22');
+  assert.match(await page.locator('#save-status').textContent(),/offline/i);
+  await page.locator('[data-view="top"]').click();
+  assert.match(await page.locator('#plan-map').textContent(),/3,10 m/);
+  assert.deepEqual(errors,[]);
+ }finally{await context.close();}
+});
