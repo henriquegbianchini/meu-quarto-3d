@@ -67,8 +67,9 @@ for(const [width,height] of [[1440,900],[1024,768],[768,1024],[390,844],[320,640
     assert.ok(g.objects.right<=g.viewport.left+2,'Objetos à esquerda');
     assert.ok(g.viewport.right<=g.inspector.left+2,'Inspetor à direita');
    }else if(width<740){
-    assert.ok(g.viewport.bottom<=g.inspector.top+2,'Canvas acima do inspetor');
-    assert.ok(g.inspector.bottom<=g.objects.top+2,'Objetos abaixo do inspetor');
+    assert.equal(g.objects.visibility,'hidden','Gaveta de objetos fechada ao entrar');
+    assert.equal(g.inspector.visibility,'hidden','Gaveta de propriedades fechada ao entrar');
+    assert.ok(g.viewport.height>=height*.5,'Canvas ocupa a área principal');
    }
    assert.deepEqual(errors,[],'Exceções no navegador: '+errors);
    await page.screenshot({path:join(root,'test-evidence-'+width+'.png'),fullPage:true});
