@@ -132,7 +132,7 @@ test('criar objeto, desfazer, refazer e excluir preserva projeto padrão',async(
   assert.equal(await page.locator('#object-count').textContent(),'22');
   await page.locator('#redo').click();
   assert.equal(await page.locator('#object-count').textContent(),'23');
-  await page.locator('.object-row.selected .object-select').click();
+  await page.locator('.object-row').filter({hasText:'Móvel livre'}).locator('.object-select').click();
   await page.locator('[data-action="delete"]').click();
   assert.equal(await page.locator('#object-count').textContent(),'22');
   assert.deepEqual(errors,[]);
