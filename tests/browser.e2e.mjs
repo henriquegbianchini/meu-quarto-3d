@@ -35,8 +35,8 @@ async function open(width,height){
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'domcontentloaded'});
  await page.locator('#loading[hidden]').waitFor({timeout:15000});
- await page.locator('#object-count').toHaveCount(1);
- await page.waitForFunction(()=>document.querySelector('#object-count')?.textContent==='22',{timeout:8000});
+ await page.locator('#object-count').waitFor({timeout:10000});
+ await page.waitForFunction(()=>document.querySelector('#object-count')?.textContent==='22',null,{timeout:8000});
  return {page,context,errors};
 }
 
@@ -80,7 +80,7 @@ test('planta, cotas, objeto selecionado e JSON exportado são consistentes',asyn
  try{
   await page.locator('[data-view="top"]').click();
   await page.locator('#plan-map').waitFor();
-  const text=await page.locator('#plan-map').innerText();
+  const text=await page.locator('#plan-map').textContent();
   assert.match(text,/3,10 m/);
   assert.match(text,/2,90 m/);
   assert.match(text,/JANELA · 2,05 m/);
