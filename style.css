@@ -264,3 +264,31 @@
  .plan-legend{max-height:89px}
  .plan-hint{bottom:57px;max-width:95%;font-size:10px}
 }
+
+/* Cabeçalho compacto e conexão no menu de configurações. */
+.topbar{position:relative;z-index:10;gap:16px}
+.brand{flex-shrink:0}
+.brandmark{width:40px;height:40px;border-radius:8px}
+.project-title{display:flex;min-width:0;padding-left:0;border-left:0}
+.project-title strong{font-size:16px;letter-spacing:-.3px}
+.settings-menu{position:relative;display:flex;align-items:center}
+#settings-menu-button{width:38px;height:38px;flex-shrink:0}
+#settings-menu-button svg{width:20px;height:20px;stroke-width:1.35}
+#settings-menu-button[aria-expanded="true"]{background:var(--soft)}
+.settings-popover{position:absolute;right:0;top:calc(100% + 13px);width:min(290px,calc(100vw - 28px));padding:12px;background:#fdfdf9;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 36px #24392b1c;z-index:20}
+.settings-heading{display:block;padding:7px 10px 10px;font-size:12px;font-weight:600}
+.settings-item{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border-radius:7px;text-align:left;font-size:13px;font-weight:500}
+.settings-item svg{width:18px;height:18px;stroke-width:1.5}
+.settings-popover .save-status-button{display:block;width:100%;max-width:none;padding:10px;line-height:1.5;text-align:left;font-size:11px;border-top:1px solid var(--line);margin-top:7px}
+@media(max-width:730px){
+ .topbar{gap:11px}
+ .brandmark{width:34px;height:34px;border-radius:7px}
+ .project-title{display:flex;flex:1;padding:0;border:0}
+ .project-title strong{font-size:15px}
+ .header-actions{gap:4px}
+ .header-actions #settings-menu-button{width:34px;height:34px}
+ #settings-panel #github-connect{padding:11px 10px}
+ #settings-panel #github-connect svg{display:block}
+ #settings-panel #github-connect span{font-size:13px}
+ .settings-popover .save-status-button{font-size:11px}
+}
